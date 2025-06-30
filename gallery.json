@@ -2,5 +2,6 @@
   { "src": "images/165.jpg", "alt": "Name", "tags": ["Yen", "Triss"] },
   { "src": "images/374.jpg", "alt": "Name2", "tags": ["Yen"] },
   { "src": "images/377.jpg", "alt": "Name3", "tags": ["Triss"] },
-  { "src": "images/380.jpg", "alt": "name4", "tags": ["Anna"] }
+  { "src": "images/380.jpg", "alt": "name4", "tags": ["Anna"] },
+  { "src": "images/385.jpg", "alt": "name5", "tags": ["Anna"] }
 ]
