@@ -21,4 +21,4 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run script
-        run: folder_to_gallery.py     # Change this to the name of your Python script
+        run: python folder_to_gallery.py # Change this to the name of your Python script
