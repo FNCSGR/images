@@ -56,45 +56,60 @@
   <header>
     <div class="filters">
       <button class="active" data-filter="all">All</button>
-      <button data-filter="Yen">Yen</button>
-      <button data-filter="Triss">Triss</button>
-      <button data-filter="Anna">Anna</button>
     </div>
   </header>
-  <main class="gallery">
-    <div class="gallery-item" data-tags="Yen Triss">
-      <img src="images/165.jpg" alt="Sunset at the ocean" />
-    </div>
-    <div class="gallery-item" data-tags="Yen">
-      <img src="images/374.jpg" alt="Snowy mountain" />
-    </div>
-    <div class="gallery-item" data-tags="Triss">
-      <img src="images/377.jpg" alt="Sunset in the valley" />
-    </div>
-    <div class="gallery-item" data-tags="Anna">
-      <img src="images/380.jpg" alt="Waves on the beach" />
-    </div>
-  </main>
+  <main class="gallery"></main>
   <script>
-    const buttons = document.querySelectorAll(".filters button");
-    const items = document.querySelectorAll(".gallery-item");
+    const gallery = document.querySelector(".gallery");
+    const filterBar = document.querySelector(".filters");
+    let allTags = new Set();
 
-    buttons.forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelector(".filters .active").classList.remove("active");
-        button.classList.add("active");
-        const filter = button.dataset.filter;
+    fetch("gallery.json")
+      .then(response => response.json())
+      .then(images => {
+        images.forEach(({ src, alt, tags }) => {
+          const item = document.createElement("div");
+          item.className = "gallery-item";
+          item.dataset.tags = tags.join(" ");
 
-        items.forEach(item => {
-          const tags = item.dataset.tags.split(" ");
-          if (filter === "all" || tags.includes(filter)) {
-            item.style.display = "block";
-          } else {
-            item.style.display = "none";
-          }
+          const img = document.createElement("img");
+          img.src = src;
+          img.alt = alt;
+
+          item.appendChild(img);
+          gallery.appendChild(item);
+
+          tags.forEach(tag => allTags.add(tag));
+        });
+
+        allTags = Array.from(allTags).sort();
+        allTags.forEach(tag => {
+          const btn = document.createElement("button");
+          btn.dataset.filter = tag;
+          btn.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+          filterBar.appendChild(btn);
+        });
+
+        initFiltering();
+      });
+
+    function initFiltering() {
+      const buttons = document.querySelectorAll(".filters button");
+      const items = document.querySelectorAll(".gallery-item");
+
+      buttons.forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelector(".filters .active").classList.remove("active");
+          button.classList.add("active");
+          const filter = button.dataset.filter;
+
+          items.forEach(item => {
+            const tags = item.dataset.tags.split(" ");
+            item.style.display = (filter === "all" || tags.includes(filter)) ? "block" : "none";
+          });
         });
       });
-    });
+    }
   </script>
 </body>
 </html>
