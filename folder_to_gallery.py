@@ -1,7 +1,7 @@
 import os
 import json
 
-IMAGE_DIR = "images"
+IMAGE_DIR = r"images/images"
 OUTPUT_FILE = "gallery.json"
 
 def guess_tags(filename):
