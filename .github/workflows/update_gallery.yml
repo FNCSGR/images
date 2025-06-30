@@ -1,7 +1,7 @@
 name: Run folder to gallery
 
 on:
-  workflow_dispatch:    # Also allow manual runs
+  workflow_dispatch:    # Manual trigger
 
 jobs:
   run-script:
@@ -14,11 +14,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # You can change this to your required version
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run script
-        run: python folder_to_gallery.py # Change this to the name of your Python script
+        run: python folder_to_gallery.py  # Update with your script name
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gallery.json
+          git diff --cached --quiet || git commit -m "Update gallery.json"
+          git push
+
