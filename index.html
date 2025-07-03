@@ -102,17 +102,20 @@
     const artistFilter = document.getElementById("artist-filter");
     const characterFilter = document.getElementById("character-filter");
     const visualFilter = document.getElementById("visual-filter");
+    const activity = document.getElementById("activity-filter");
 
     const tagCategories = {
       artist: ["Meis", "WIP", "WIP"],
       character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
-      visual: ["Armpit", "WIP", "WIP"]
+      visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
+      activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
     };
 
     const selectedTags = {
       artist: new Set(),
       character: new Set(),
-      visual: new Set()
+      visual: new Set(),
+      activity: new Set(),
     };
 
     const allItems = [];
@@ -161,6 +164,7 @@
         tagCategories.artist.forEach(tag => createCheckbox(artistFilter, tag, "artist"));
         tagCategories.character.forEach(tag => createCheckbox(characterFilter, tag, "character"));
         tagCategories.visual.forEach(tag => createCheckbox(visualFilter, tag, "visual"));
+        tagCategories.activity.forEach(tag => createCheckbox(activity, tag, "activity"));
       });
 
     function filterGallery() {
