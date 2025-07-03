@@ -22,7 +22,15 @@
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 1rem;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group label {
+      margin-bottom: 0.25rem;
+      font-weight: bold;
     }
     select {
       background: #333;
@@ -55,34 +63,41 @@
 <body>
   <header>
     <div class="filters">
-      <select id="country-filter" multiple></select>
-      <select id="time-filter" multiple></select>
-      <select id="location-filter" multiple></select>
+      <div class="filter-group">
+        <label for="Artist-filter">Artist</label>
+        <select id="Artist-filter" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="Characters-filter">Characters of Day</label>
+        <select id="Characters-filter" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="Visual-filter">Visual</label>
+        <select id="Visual-filter" multiple></select>
+      </div>
     </div>
   </header>
   <main class="gallery"></main>
   <script>
     const gallery = document.querySelector(".gallery");
-    const countryFilter = document.getElementById("country-filter");
-    const timeFilter = document.getElementById("time-filter");
-    const locationFilter = document.getElementById("location-filter");
+    const ArtistFilter = document.getElementById("Artist-filter");
+    const CharactersFilter = document.getElementById("Characters-filter");
+    const VisualFilter = document.getElementById("Visual-filter");
 
     const tagCategories = {
-      country: ["france", "germany", "italy"],
-      time: ["morning", "afternoon", "evening"],
-      location: ["mountains", "forest", "city"]
+      Artist: ["Meis"],
+      Characters: ["Solo", "Yen", "Triss", "Anna", "Twin", "Werewolf"],
+      Visual: ["Armpit"]
     };
 
     const tagMap = {
-      france: "country",
-      germany: "country",
-      italy: "country",
-      morning: "time",
-      afternoon: "time",
-      evening: "time",
-      mountains: "location",
-      forest: "location",
-      city: "location"
+      Meis: "Artist",
+      Yen: "Characters",
+      Triss: "Characters",
+      Yen: "Characters",
+      Twin: "Characters",
+      Werewolf: "Characters",
+      Armpits: "Visual"
     };
 
     const allItems = [];
@@ -111,11 +126,11 @@
           allItems.push(item);
         });
 
-        tagCategories.country.forEach(tag => createOption(countryFilter, tag));
-        tagCategories.time.forEach(tag => createOption(timeFilter, tag));
-        tagCategories.location.forEach(tag => createOption(locationFilter, tag));
+        tagCategories.Artist.forEach(tag => createOption(ArtistFilter, tag));
+        tagCategories.Characters.forEach(tag => createOption(CharactersFilter, tag));
+        tagCategories.Visual.forEach(tag => createOption(VisualFilter, tag));
 
-        [countryFilter, timeFilter, locationFilter].forEach(select => {
+        [ArtistFilter, CharactersFilter, VisualFilter].forEach(select => {
           select.addEventListener("change", filterGallery);
         });
       });
@@ -125,18 +140,18 @@
     }
 
     function filterGallery() {
-      const selectedCountries = getSelectedValues(countryFilter);
-      const selectedTimes = getSelectedValues(timeFilter);
-      const selectedLocations = getSelectedValues(locationFilter);
+      const selectedCountries = getSelectedValues(ArtistFilter);
+      const selectedCharacterss = getSelectedValues(CharactersFilter);
+      const selectedVisuals = getSelectedValues(VisualFilter);
 
       allItems.forEach(item => {
         const tags = item.dataset.tags.split(" ");
 
-        const matchCountry = selectedCountries.length === 0 || selectedCountries.some(tag => tags.includes(tag));
-        const matchTime = selectedTimes.length === 0 || selectedTimes.some(tag => tags.includes(tag));
-        const matchLocation = selectedLocations.length === 0 || selectedLocations.some(tag => tags.includes(tag));
+        const matchArtist = selectedCountries.length === 0 || selectedCountries.some(tag => tags.includes(tag));
+        const matchCharacters = selectedCharacterss.length === 0 || selectedCharacterss.some(tag => tags.includes(tag));
+        const matchVisual = selectedVisuals.length === 0 || selectedVisuals.some(tag => tags.includes(tag));
 
-        item.style.display = (matchCountry && matchTime && matchLocation) ? "block" : "none";
+        item.style.display = (matchArtist && matchCharacters && matchVisual) ? "block" : "none";
       });
     }
   </script>
