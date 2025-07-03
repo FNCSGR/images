@@ -24,16 +24,16 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
-    .filters button {
+    select {
       background: #333;
-      border: none;
       color: #fff;
+      border: none;
       padding: 0.5rem 1rem;
       border-radius: 5px;
-      cursor: pointer;
+      min-width: 150px;
     }
-    .filters button.active {
-      background: #6200ee;
+    select[multiple] {
+      height: 6em;
     }
     .gallery {
       display: grid;
@@ -55,14 +55,44 @@
 <body>
   <header>
     <div class="filters">
-      <button class="active" data-filter="all">All</button>
+      <select id="country-filter" multiple></select>
+      <select id="time-filter" multiple></select>
+      <select id="location-filter" multiple></select>
     </div>
   </header>
   <main class="gallery"></main>
   <script>
     const gallery = document.querySelector(".gallery");
-    const filterBar = document.querySelector(".filters");
-    let allTags = new Set();
+    const countryFilter = document.getElementById("country-filter");
+    const timeFilter = document.getElementById("time-filter");
+    const locationFilter = document.getElementById("location-filter");
+
+    const tagCategories = {
+      country: ["france", "germany", "italy"],
+      time: ["morning", "afternoon", "evening"],
+      location: ["mountains", "forest", "city"]
+    };
+
+    const tagMap = {
+      france: "country",
+      germany: "country",
+      italy: "country",
+      morning: "time",
+      afternoon: "time",
+      evening: "time",
+      mountains: "location",
+      forest: "location",
+      city: "location"
+    };
+
+    const allItems = [];
+
+    function createOption(select, value) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+      select.appendChild(opt);
+    }
 
     fetch("gallery.json")
       .then(response => response.json())
@@ -78,36 +108,35 @@
 
           item.appendChild(img);
           gallery.appendChild(item);
-
-          tags.forEach(tag => allTags.add(tag));
+          allItems.push(item);
         });
 
-        allTags = Array.from(allTags).sort();
-        allTags.forEach(tag => {
-          const btn = document.createElement("button");
-          btn.dataset.filter = tag;
-          btn.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
-          filterBar.appendChild(btn);
-        });
+        tagCategories.country.forEach(tag => createOption(countryFilter, tag));
+        tagCategories.time.forEach(tag => createOption(timeFilter, tag));
+        tagCategories.location.forEach(tag => createOption(locationFilter, tag));
 
-        initFiltering();
+        [countryFilter, timeFilter, locationFilter].forEach(select => {
+          select.addEventListener("change", filterGallery);
+        });
       });
 
-    function initFiltering() {
-      const buttons = document.querySelectorAll(".filters button");
-      const items = document.querySelectorAll(".gallery-item");
+    function getSelectedValues(select) {
+      return Array.from(select.selectedOptions).map(option => option.value);
+    }
 
-      buttons.forEach(button => {
-        button.addEventListener("click", () => {
-          document.querySelector(".filters .active").classList.remove("active");
-          button.classList.add("active");
-          const filter = button.dataset.filter;
+    function filterGallery() {
+      const selectedCountries = getSelectedValues(countryFilter);
+      const selectedTimes = getSelectedValues(timeFilter);
+      const selectedLocations = getSelectedValues(locationFilter);
 
-          items.forEach(item => {
-            const tags = item.dataset.tags.split(" ");
-            item.style.display = (filter === "all" || tags.includes(filter)) ? "block" : "none";
-          });
-        });
+      allItems.forEach(item => {
+        const tags = item.dataset.tags.split(" ");
+
+        const matchCountry = selectedCountries.length === 0 || selectedCountries.some(tag => tags.includes(tag));
+        const matchTime = selectedTimes.length === 0 || selectedTimes.some(tag => tags.includes(tag));
+        const matchLocation = selectedLocations.length === 0 || selectedLocations.some(tag => tags.includes(tag));
+
+        item.style.display = (matchCountry && matchTime && matchLocation) ? "block" : "none";
       });
     }
   </script>
