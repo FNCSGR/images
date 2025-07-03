@@ -22,26 +22,29 @@
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 2rem;
     }
     .filter-group {
       display: flex;
       flex-direction: column;
     }
     .filter-group label {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
       font-weight: bold;
     }
-    select {
-      background: #333;
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
+    .checkboxes {
+      background: #2a2a2a;
+      padding: 0.5rem;
       border-radius: 5px;
-      min-width: 150px;
     }
-    select[multiple] {
-      height: 6em;
+    .checkboxes label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.25rem;
+      cursor: pointer;
+    }
+    .checkboxes input[type="checkbox"] {
+      margin-right: 0.5rem;
     }
     .gallery {
       display: grid;
@@ -64,16 +67,16 @@
   <header>
     <div class="filters">
       <div class="filter-group">
-        <label for="Artist-filter">Artist</label>
-        <select id="Artist-filter" multiple></select>
+        <label>Artist</label>
+        <div class="checkboxes" id="-filter"></div>
       </div>
       <div class="filter-group">
-        <label for="Characters-filter">Characters of Day</label>
-        <select id="Characters-filter" multiple></select>
+        <label>Character</label>
+        <div class="checkboxes" id="Character-filter"></div>
       </div>
       <div class="filter-group">
-        <label for="Visual-filter">Visual</label>
-        <select id="Visual-filter" multiple></select>
+        <label>Visual</label>
+        <div class="checkboxes" id="Visual-filter"></div>
       </div>
     </div>
   </header>
@@ -81,32 +84,41 @@
   <script>
     const gallery = document.querySelector(".gallery");
     const ArtistFilter = document.getElementById("Artist-filter");
-    const CharactersFilter = document.getElementById("Characters-filter");
+    const CharacterFilter = document.getElementById("Character-filter");
     const VisualFilter = document.getElementById("Visual-filter");
 
     const tagCategories = {
       Artist: ["Meis"],
-      Characters: ["Solo", "Yen", "Triss", "Anna", "Twin", "Werewolf"],
+      Character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Werewolf"],
       Visual: ["Armpit"]
     };
 
-    const tagMap = {
-      Meis: "Artist",
-      Yen: "Characters",
-      Triss: "Characters",
-      Yen: "Characters",
-      Twin: "Characters",
-      Werewolf: "Characters",
-      Armpits: "Visual"
+    const selectedTags = {
+      Artist: new Set(),
+      Character: new Set(),
+      Visual: new Set()
     };
 
     const allItems = [];
 
-    function createOption(select, value) {
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = value.charAt(0).toUpperCase() + value.slice(1);
-      select.appendChild(opt);
+    function createCheckbox(container, value, category) {
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = value;
+
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          selectedTags[category].add(value);
+        } else {
+          selectedTags[category].delete(value);
+        }
+        filterGallery();
+      });
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
+      container.appendChild(label);
     }
 
     fetch("gallery.json")
@@ -126,32 +138,21 @@
           allItems.push(item);
         });
 
-        tagCategories.Artist.forEach(tag => createOption(ArtistFilter, tag));
-        tagCategories.Characters.forEach(tag => createOption(CharactersFilter, tag));
-        tagCategories.Visual.forEach(tag => createOption(VisualFilter, tag));
-
-        [ArtistFilter, CharactersFilter, VisualFilter].forEach(select => {
-          select.addEventListener("change", filterGallery);
-        });
+        tagCategories.Artist.forEach(tag => createCheckbox(ArtistFilter, tag, "Artist"));
+        tagCategories.Character.forEach(tag => createCheckbox(CharacterFilter, tag, "Character"));
+        tagCategories.Visual.forEach(tag => createCheckbox(VisualFilter, tag, "Visual"));
       });
 
-    function getSelectedValues(select) {
-      return Array.from(select.selectedOptions).map(option => option.value);
-    }
-
     function filterGallery() {
-      const selectedCountries = getSelectedValues(ArtistFilter);
-      const selectedCharacterss = getSelectedValues(CharactersFilter);
-      const selectedVisuals = getSelectedValues(VisualFilter);
-
       allItems.forEach(item => {
         const tags = item.dataset.tags.split(" ");
 
-        const matchArtist = selectedCountries.length === 0 || selectedCountries.some(tag => tags.includes(tag));
-        const matchCharacters = selectedCharacterss.length === 0 || selectedCharacterss.some(tag => tags.includes(tag));
-        const matchVisual = selectedVisuals.length === 0 || selectedVisuals.some(tag => tags.includes(tag));
+        const match = Object.keys(tagCategories).every(category => {
+          const selected = selectedTags[category];
+          return selected.size === 0 || [...selected].some(tag => tags.includes(tag));
+        });
 
-        item.style.display = (matchArtist && matchCharacters && matchVisual) ? "block" : "none";
+        item.style.display = match ? "block" : "none";
       });
     }
   </script>
