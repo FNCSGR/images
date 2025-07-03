@@ -13,16 +13,31 @@
       padding: 0;
     }
     header {
-      padding: 1rem;
       background: #1e1e1e;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .filters {
+    .filter-toggle {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      cursor: pointer;
+      background: #2a2a2a;
+      border: none;
+      color: #eee;
+      font-size: 1rem;
+      width: 100%;
+    }
+    .filters {
+      display: none;
       flex-wrap: wrap;
       gap: 2rem;
+      padding: 1rem;
+    }
+    .filters.active {
+      display: flex;
     }
     .filter-group {
       display: flex;
@@ -65,7 +80,8 @@
 </head>
 <body>
   <header>
-    <div class="filters">
+    <button class="filter-toggle" onclick="toggleFilters()">Toggle Filters</button>
+    <div class="filters" id="filters-bar">
       <div class="filter-group">
         <label>Artist</label>
         <div class="checkboxes" id="artist-filter"></div>
@@ -100,6 +116,10 @@
     };
 
     const allItems = [];
+
+    function toggleFilters() {
+      document.getElementById("filters-bar").classList.toggle("active");
+    }
 
     function createCheckbox(container, value, category) {
       const label = document.createElement("label");
