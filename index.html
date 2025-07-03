@@ -67,36 +67,36 @@
   <header>
     <div class="filters">
       <div class="filter-group">
-        <label>Artist</label>
-        <div class="checkboxes" id="-filter"></div>
+        <label>Country</label>
+        <div class="checkboxes" id="country-filter"></div>
       </div>
       <div class="filter-group">
-        <label>Character</label>
-        <div class="checkboxes" id="Character-filter"></div>
+        <label>Time of Day</label>
+        <div class="checkboxes" id="time-filter"></div>
       </div>
       <div class="filter-group">
-        <label>Visual</label>
-        <div class="checkboxes" id="Visual-filter"></div>
+        <label>Location</label>
+        <div class="checkboxes" id="location-filter"></div>
       </div>
     </div>
   </header>
   <main class="gallery"></main>
   <script>
     const gallery = document.querySelector(".gallery");
-    const ArtistFilter = document.getElementById("Artist-filter");
-    const CharacterFilter = document.getElementById("Character-filter");
-    const VisualFilter = document.getElementById("Visual-filter");
+    const countryFilter = document.getElementById("country-filter");
+    const timeFilter = document.getElementById("time-filter");
+    const locationFilter = document.getElementById("location-filter");
 
     const tagCategories = {
-      Artist: ["Meis"],
-      Character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Werewolf"],
-      Visual: ["Armpit"]
+      country: ["france", "germany", "italy"],
+      time: ["morning", "afternoon", "evening"],
+      location: ["mountains", "forest", "city"]
     };
 
     const selectedTags = {
-      Artist: new Set(),
-      Character: new Set(),
-      Visual: new Set()
+      country: new Set(),
+      time: new Set(),
+      location: new Set()
     };
 
     const allItems = [];
@@ -138,9 +138,9 @@
           allItems.push(item);
         });
 
-        tagCategories.Artist.forEach(tag => createCheckbox(ArtistFilter, tag, "Artist"));
-        tagCategories.Character.forEach(tag => createCheckbox(CharacterFilter, tag, "Character"));
-        tagCategories.Visual.forEach(tag => createCheckbox(VisualFilter, tag, "Visual"));
+        tagCategories.country.forEach(tag => createCheckbox(countryFilter, tag, "country"));
+        tagCategories.time.forEach(tag => createCheckbox(timeFilter, tag, "time"));
+        tagCategories.location.forEach(tag => createCheckbox(locationFilter, tag, "location"));
       });
 
     function filterGallery() {
