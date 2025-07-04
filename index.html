@@ -148,7 +148,7 @@
       container.appendChild(label);
     }
 
-const jsonFiles = ["Meis_gallery.json", "Niodreth_gallery.json"]; // Add more as needed
+const jsonFiles = ["Defines/Meis.json", "Defines/Niodreth.json"]; // Add more as needed
 
 Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
   .then(results => {
