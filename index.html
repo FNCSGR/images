@@ -148,10 +148,12 @@
       container.appendChild(label);
     }
 
-    fetch("gallery.json")
-      .then(response => response.json())
-      .then(images => {
-        images.forEach(({ src, alt, tags }) => {
+const jsonFiles = ["Meis_gallery.json", "Niodreth_gallery.json"]; // Add more as needed
+
+Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
+  .then(results => {
+    const allImages = results.flat(); // Flatten array of arrays
+        allImages.forEach(({ src, alt, tags }) => {
           const item = document.createElement("div");
           item.className = "gallery-item";
           item.dataset.tags = tags.join(" ");
