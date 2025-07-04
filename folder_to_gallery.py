@@ -1,8 +1,8 @@
 import os
 import json
 
-IMAGE_DIR = "images"
-OUTPUT_FILE = "gallery.json"
+IMAGE_DIR = "new_images"
+OUTPUT_FILE = "new_gallery.json"
 
 def guess_tags(filename):
     # Example: "sunset_beach.jpg" → ["sunset", "beach"]
