@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Gallery</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      padding: 1rem;
+      background: #1e1e1e;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .filters button {
+      background: #333;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .filters button.active {
+      background: #6200ee;
+    }
+    .filter-mode {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .gallery-item {
+      background: #1e1e1e;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .gallery-item img {
+      width: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="filters">
+      <button class="active" data-filter="all">All</button>
+      <div class="filter-mode">
+        <label for="filter-mode-toggle">Filter Mode:</label>
+        <select id="filter-mode-toggle">
+          <option value="any">Any</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
+  </header>
+  <main class="gallery"></main>
+  <script>
+    const gallery = document.querySelector(".gallery");
+    const filterBar = document.querySelector(".filters");
+    const filterModeSelect = document.getElementById("filter-mode-toggle");
+    let filterMode = "any";
+    let allTags = new Set();
+
+    fetch("gallery.json")
+      .then(response => response.json())
+      .then(images => {
+        images.forEach(({ src, alt, tags }) => {
+          const item = document.createElement("div");
+          item.className = "gallery-item";
+          item.dataset.tags = tags.join(" ");
+
+          const img = document.createElement("img");
+          img.src = src;
+          img.alt = alt;
+
+          item.appendChild(img);
+          gallery.appendChild(item);
+
+          tags.forEach(tag => allTags.add(tag));
+        });
+
+        allTags = Array.from(allTags).sort();
+        allTags.forEach(tag => {
+          const btn = document.createElement("button");
+          btn.dataset.filter = tag;
+          btn.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+          filterBar.insertBefore(btn, filterBar.querySelector(".filter-mode"));
+        });
+
+        initFiltering();
+      });
+
+    function initFiltering() {
+      const buttons = document.querySelectorAll(".filters button");
+      const items = document.querySelectorAll(".gallery-item");
+      let activeTags = new Set();
+
+      buttons.forEach(button => {
+        button.addEventListener("click", () => {
+          if (button.dataset.filter === "all") {
+            activeTags.clear();
+            buttons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+            filterGallery(activeTags, items);
+            return;
+          }
+
+          const tag = button.;
+          const isActive = button.classList.toggle("active");
+
+          if (isActive) {
+            activeTags.add(tag);
+          } else {dffdfd
+            activeTags.delete(tag);
+          }
+
+          document.querySelector(".filters button[data-filter='all']").classList.remove("active");
+          filterGallery(activeTags, items);
+        });
+      });
+
+      filterModeSelect.addEventListener("change", () => {
+        filterMode = filterModeSelect.value;
+        filterGallery(activeTags, items);
+      });
+    }
+
+    function filterGallery(activeTags, items) {
+      items.forEach(item => {
+        const tags = item.dataset.tags.split(" ");
+        if (activeTags.size === 0) {
+          item.style.display = "block";
+        } else {
+          const matchCount = [...activeTags].filter(tag => tags.includes(tag)).length;
+          const match = filterMode === "any"
+            ? matchCount > 0
+            : matchCount === activeTags.size;
+          item.style.display = match ? "block" : "none";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
