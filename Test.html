@@ -26,8 +26,8 @@
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
+      gap: 1rem;
+      align-items: flex-start;
       transition: max-height 0.3s ease;
       overflow: hidden;
     }
@@ -37,7 +37,7 @@
       padding-bottom: 0;
     }
     .filters.expanded {
-      max-height: 300px;
+      max-height: 500px;
       padding-top: 0.5rem;
       padding-bottom: 0.5rem;
     }
@@ -62,10 +62,26 @@
       text-align: left;
     }
     .filter-mode {
-      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      margin-left: auto;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    .filter-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
     }
     .gallery {
       display: grid;
@@ -89,11 +105,22 @@
     <div class="filters-wrapper">
       <button class="filter-toggle" id="toggle-filters">Show Filters</button>
       <div class="filters collapsed" id="filters-bar">
-        <button class="active" data-filter="all">All</button>
-        <div id="artist-filter"></div>
-        <div id="character-filter"></div>
-        <div id="visual-filter"></div>
-        <div id="activity-filter"></div>
+        <details class="filter-group" open>
+          <summary>Artist</summary>
+          <div id="artist-filter"></div>
+        </details>
+        <details class="filter-group" open>
+          <summary>Character</summary>
+          <div id="character-filter"></div>
+        </details>
+        <details class="filter-group" open>
+          <summary>Visual</summary>
+          <div id="visual-filter"></div>
+        </details>
+        <details class="filter-group" open>
+          <summary>Activity</summary>
+          <div id="activity-filter"></div>
+        </details>
         <div class="filter-mode">
           <label for="filter-mode-toggle">Filter Mode:</label>
           <select id="filter-mode-toggle">
@@ -156,25 +183,45 @@
     function filterGallery() {
       allItems.forEach(item => {
         const itemTags = item.dataset.tags.split(" ");
-        let matches = Object.entries(selectedTags).every(([category, tags]) => {
-          if (tags.size === 0) return true;
+
+        let matches = filterMode === "all";
+
+        for (const [category, tags] of Object.entries(selectedTags)) {
+          if (tags.size === 0) continue;
+
           const tagArray = Array.from(tags);
-          if (filterMode === "any") {
-            return tagArray.some(tag => itemTags.includes(tag));
-          } else {
-            return tagArray.every(tag => itemTags.includes(tag));
+          const hasMatch = tagArray.some(tag => itemTags.includes(tag));
+          const hasAll = tagArray.every(tag => itemTags.includes(tag));
+
+          if (filterMode === "any" && hasMatch) {
+            matches = true;
+            break;
           }
-        });
+
+          if (filterMode === "all" && !hasAll) {
+            matches = false;
+            break;
+          }
+        }
+
+        if (filterMode === "all") {
+          // In 'all' mode, must check every category with selected tags had all of its tags matched
+          matches = Object.entries(selectedTags).every(([category, tags]) => {
+            if (tags.size === 0) return true;
+            const tagArray = Array.from(tags);
+            return tagArray.every(tag => itemTags.includes(tag));
+          });
+        }
+
         item.style.display = matches ? "block" : "none";
       });
     }
 
-    const toggleFiltersBtn = document.getElementById("toggle-filters");
-    toggleFiltersBtn.addEventListener("click", () => {
+    document.getElementById("toggle-filters").addEventListener("click", () => {
       const filterBar = document.getElementById("filters-bar");
       const expanded = filterBar.classList.toggle("expanded");
       filterBar.classList.toggle("collapsed", !expanded);
-      toggleFiltersBtn.textContent = expanded ? "Hide Filters" : "Show Filters";
+      document.getElementById("toggle-filters").textContent = expanded ? "Hide Filters" : "Show Filters";
     });
 
     document.getElementById("filter-mode-toggle").addEventListener("change", e => {
@@ -182,7 +229,7 @@
       filterGallery();
     });
 
-    const jsonFiles = ["Defines/Meis.json", "Defines/Niodreth.json"];
+    const jsonFiles = ["Defines/Test.json"];
     Promise.all(jsonFiles.map(file => fetch(file).then(r => r.json())))
       .then(dataArrays => {
         const images = dataArrays.flat();
