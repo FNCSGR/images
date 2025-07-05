@@ -13,53 +13,59 @@
       padding: 0;
     }
     header {
+      padding: 1rem;
       background: #1e1e1e;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .filter-toggle {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      cursor: pointer;
-      background: #2a2a2a;
-      border: none;
-      color: #eee;
-      font-size: 1rem;
-      width: 100%;
-    }
-    .filters {
-      display: none;
-      flex-wrap: wrap;
-      gap: 2rem;
-      padding: 1rem;
-    }
-    .filters.active {
-      display: flex;
-    }
-    .filter-group {
+    .filters-wrapper {
       display: flex;
       flex-direction: column;
     }
-    .filter-group label {
-      margin-bottom: 0.5rem;
-      font-weight: bold;
-    }
-    .checkboxes {
-      background: #2a2a2a;
-      padding: 0.5rem;
-      border-radius: 5px;
-    }
-    .checkboxes label {
+    .filters {
       display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
       align-items: center;
-      margin-bottom: 0.25rem;
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+    }
+    .filters.collapsed {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .filters.expanded {
+      max-height: 300px;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    .filters button {
+      background: #333;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .checkboxes input[type="checkbox"] {
-      margin-right: 0.5rem;
+    .filters button.active {
+      background: #6200ee;
+    }
+    .filter-toggle {
+      background: none;
+      color: #eee;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+    .filter-mode {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .gallery {
       display: grid;
@@ -80,24 +86,22 @@
 </head>
 <body>
   <header>
-    <button class="filter-toggle" onclick="toggleFilters()">Toggle Filters</button>
-    <div class="filters" id="filters-bar">
-      <div class="filter-group">
-        <label>Artist</label>
-        <div class="checkboxes" id="artist-filter"></div>
+    <div class="filters-wrapper">
+      <button class="filter-toggle" id="toggle-filters">Show Filters</button>
+      <div class="filters collapsed" id="filters-bar">
+        <button class="active" data-filter="all">All</button>
+        <div id="artist-filter"></div>
+        <div id="character-filter"></div>
+        <div id="visual-filter"></div>
+        <div id="activity-filter"></div>
+        <div class="filter-mode">
+          <label for="filter-mode-toggle">Filter Mode:</label>
+          <select id="filter-mode-toggle">
+            <option value="any">Any</option>
+            <option value="all">All</option>
+          </select>
+        </div>
       </div>
-      <div class="filter-group">
-        <label>Character</label>
-        <div class="checkboxes" id="character-filter"></div>
-      </div>
-      <div class="filter-group">
-        <label>Visual</label>
-        <div class="checkboxes" id="visual-filter"></div>
-      </div>
-      <div class="filter-group">
-        <label>Activity</label>
-        <div class="checkboxes" id="activity-filter"></div>
-      </div>      
     </div>
   </header>
   <main class="gallery"></main>
@@ -109,10 +113,10 @@
     const activityFilter = document.getElementById("activity-filter");
 
     const tagCategories = {
-      artist: ["A1", "A2", "A3"],
-      character: ["C1", "C2", "C3"],
-      visual: ["V1", "V2", "V3"],
-      activity: ["A1", "A2", "A3"]
+      artist: ["Meis", "Niodreth", "WIP"],
+      character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
+      visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
+      activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
     };
 
     const selectedTags = {
@@ -123,6 +127,7 @@
     };
 
     const allItems = [];
+    let filterMode = "any";
 
     function toggleFilters() {
       document.getElementById("filters-bar").classList.toggle("active");
@@ -148,12 +153,41 @@
       container.appendChild(label);
     }
 
-const jsonFiles = ["Defines/G1.json", "Defines/G2.json"]; // Add more as needed
+    function filterGallery() {
+      allItems.forEach(item => {
+        const itemTags = item.dataset.tags.split(" ");
+        let matches = Object.entries(selectedTags).every(([category, tags]) => {
+          if (tags.size === 0) return true;
+          const tagArray = Array.from(tags);
+          if (filterMode === "any") {
+            return tagArray.some(tag => itemTags.includes(tag));
+          } else {
+            return tagArray.every(tag => itemTags.includes(tag));
+          }
+        });
+        item.style.display = matches ? "block" : "none";
+      });
+    }
 
-Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
-  .then(results => {
-    const allImages = results.flat(); // Flatten array of arrays
-        allImages.forEach(({ src, alt, tags }) => {
+    const toggleFiltersBtn = document.getElementById("toggle-filters");
+    toggleFiltersBtn.addEventListener("click", () => {
+      const filterBar = document.getElementById("filters-bar");
+      const expanded = filterBar.classList.toggle("expanded");
+      filterBar.classList.toggle("collapsed", !expanded);
+      toggleFiltersBtn.textContent = expanded ? "Hide Filters" : "Show Filters";
+    });
+
+    document.getElementById("filter-mode-toggle").addEventListener("change", e => {
+      filterMode = e.target.value;
+      filterGallery();
+    });
+
+    const jsonFiles = ["Defines/Meis.json", "Defines/Niodreth.json"];
+    Promise.all(jsonFiles.map(file => fetch(file).then(r => r.json())))
+      .then(dataArrays => {
+        const images = dataArrays.flat();
+
+        images.forEach(({ src, alt, tags }) => {
           const item = document.createElement("div");
           item.className = "gallery-item";
           item.dataset.tags = tags.join(" ");
@@ -164,27 +198,15 @@ Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
 
           item.appendChild(img);
           gallery.appendChild(item);
+
           allItems.push(item);
         });
 
-        tagCategories.artist.forEach(tag => createCheckbox(artistFilter, tag, "artist"));
-        tagCategories.character.forEach(tag => createCheckbox(characterFilter, tag, "character"));
-        tagCategories.visual.forEach(tag => createCheckbox(visualFilter, tag, "visual"));
-        tagCategories.activity.forEach(tag => createCheckbox(activityFilter, tag, "activity"));
+        for (const [category, values] of Object.entries(tagCategories)) {
+          const container = document.getElementById(`${category}-filter`);
+          values.forEach(value => createCheckbox(container, value, category));
+        }
       });
-
-    function filterGallery() {
-      allItems.forEach(item => {
-        const tags = item.dataset.tags.split(" ");
-
-        const match = Object.keys(tagCategories).every(category => {
-          const selected = selectedTags[category];
-          return selected.size === 0 || [...selected].some(tag => tags.includes(tag));
-        });
-
-        item.style.display = match ? "block" : "none";
-      });
-    }
   </script>
 </body>
 </html>
