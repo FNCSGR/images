@@ -13,34 +13,53 @@
       padding: 0;
     }
     header {
-      padding: 1rem;
       background: #1e1e1e;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .filters {
+    .filter-toggle {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      justify-content: space-between;
       align-items: center;
-    }
-    .filters button {
-      background: #333;
+      padding: 1rem;
+      cursor: pointer;
+      background: #2a2a2a;
       border: none;
-      color: #fff;
-      padding: 0.5rem 1rem;
+      color: #eee;
+      font-size: 1rem;
+      width: 100%;
+    }
+    .filters {
+      display: none;
+      flex-wrap: wrap;
+      gap: 2rem;
+      padding: 1rem;
+    }
+    .filters.active {
+      display: flex;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group label {
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    .checkboxes {
+      background: #2a2a2a;
+      padding: 0.5rem;
       border-radius: 5px;
+    }
+    .checkboxes label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.25rem;
       cursor: pointer;
     }
-    .filters button.active {
-      background: #6200ee;
-    }
-    .filter-mode {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .checkboxes input[type="checkbox"] {
+      margin-right: 0.5rem;
     }
     .gallery {
       display: grid;
@@ -61,29 +80,80 @@
 </head>
 <body>
   <header>
-    <div class="filters">
-      <button class="active" data-filter="all">All</button>
-      <div class="filter-mode">
-        <label for="filter-mode-toggle">Filter Mode:</label>
-        <select id="filter-mode-toggle">
-          <option value="any">Any</option>
-          <option value="all">All</option>
-        </select>
+    <button class="filter-toggle" onclick="toggleFilters()">Toggle Filters</button>
+    <div class="filters" id="filters-bar">
+      <div class="filter-group">
+        <label>Artist</label>
+        <div class="checkboxes" id="artist-filter"></div>
       </div>
+      <div class="filter-group">
+        <label>Character</label>
+        <div class="checkboxes" id="character-filter"></div>
+      </div>
+      <div class="filter-group">
+        <label>Visual</label>
+        <div class="checkboxes" id="visual-filter"></div>
+      </div>
+      <div class="filter-group">
+        <label>Activity</label>
+        <div class="checkboxes" id="activity-filter"></div>
+      </div>      
     </div>
   </header>
   <main class="gallery"></main>
   <script>
     const gallery = document.querySelector(".gallery");
-    const filterBar = document.querySelector(".filters");
-    const filterModeSelect = document.getElementById("filter-mode-toggle");
-    let filterMode = "any";
-    let allTags = new Set();
+    const artistFilter = document.getElementById("artist-filter");
+    const characterFilter = document.getElementById("character-filter");
+    const visualFilter = document.getElementById("visual-filter");
+    const activityFilter = document.getElementById("activity-filter");
 
-    fetch("gallery.json")
-      .then(response => response.json())
-      .then(images => {
-        images.forEach(({ src, alt, tags }) => {
+    const tagCategories = {
+      artist: ["A1", "A2", "A3"],
+      character: ["C1", "C2", "C3"],
+      visual: ["V1", "V2", "V3"],
+      activity: ["A1", "A2", "A3"]
+    };
+
+    const selectedTags = {
+      artist: new Set(),
+      character: new Set(),
+      visual: new Set(),
+      activity: new Set(),
+    };
+
+    const allItems = [];
+
+    function toggleFilters() {
+      document.getElementById("filters-bar").classList.toggle("active");
+    }
+
+    function createCheckbox(container, value, category) {
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = value;
+
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          selectedTags[category].add(value);
+        } else {
+          selectedTags[category].delete(value);
+        }
+        filterGallery();
+      });
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
+      container.appendChild(label);
+    }
+
+const jsonFiles = ["Defines/G1.json", "Defines/G2.json"]; // Add more as needed
+
+Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
+  .then(results => {
+    const allImages = results.flat(); // Flatten array of arrays
+        allImages.forEach(({ src, alt, tags }) => {
           const item = document.createElement("div");
           item.className = "gallery-item";
           item.dataset.tags = tags.join(" ");
@@ -94,68 +164,25 @@
 
           item.appendChild(img);
           gallery.appendChild(item);
-
-          tags.forEach(tag => allTags.add(tag));
+          allItems.push(item);
         });
 
-        allTags = Array.from(allTags).sort();
-        allTags.forEach(tag => {
-          const btn = document.createElement("button");
-          btn.dataset.filter = tag;
-          btn.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
-          filterBar.insertBefore(btn, filterBar.querySelector(".filter-mode"));
-        });
-
-        initFiltering();
+        tagCategories.artist.forEach(tag => createCheckbox(artistFilter, tag, "artist"));
+        tagCategories.character.forEach(tag => createCheckbox(characterFilter, tag, "character"));
+        tagCategories.visual.forEach(tag => createCheckbox(visualFilter, tag, "visual"));
+        tagCategories.activity.forEach(tag => createCheckbox(activityFilter, tag, "activity"));
       });
 
-    function initFiltering() {
-      const buttons = document.querySelectorAll(".filters button");
-      const items = document.querySelectorAll(".gallery-item");
-      let activeTags = new Set();
-
-      buttons.forEach(button => {
-        button.addEventListener("click", () => {
-          if (button.dataset.filter === "all") {
-            activeTags.clear();
-            buttons.forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
-            filterGallery(activeTags, items);
-            return;
-          }
-
-          const tag = button.;
-          const isActive = button.classList.toggle("active");
-
-          if (isActive) {
-            activeTags.add(tag);
-          } else {dffdfd
-            activeTags.delete(tag);
-          }
-
-          document.querySelector(".filters button[data-filter='all']").classList.remove("active");
-          filterGallery(activeTags, items);
-        });
-      });
-
-      filterModeSelect.addEventListener("change", () => {
-        filterMode = filterModeSelect.value;
-        filterGallery(activeTags, items);
-      });
-    }
-
-    function filterGallery(activeTags, items) {
-      items.forEach(item => {
+    function filterGallery() {
+      allItems.forEach(item => {
         const tags = item.dataset.tags.split(" ");
-        if (activeTags.size === 0) {
-          item.style.display = "block";
-        } else {
-          const matchCount = [...activeTags].filter(tag => tags.includes(tag)).length;
-          const match = filterMode === "any"
-            ? matchCount > 0
-            : matchCount === activeTags.size;
-          item.style.display = match ? "block" : "none";
-        }
+
+        const match = Object.keys(tagCategories).every(category => {
+          const selected = selectedTags[category];
+          return selected.size === 0 || [...selected].some(tag => tags.includes(tag));
+        });
+
+        item.style.display = match ? "block" : "none";
       });
     }
   </script>
