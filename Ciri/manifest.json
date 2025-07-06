@@ -1,0 +1,5 @@
+[
+  { "name": "Meis", "file": "Defines/Meis.json" },
+  { "name": "Niodreth", "file": "Defines/Niodreth.json" },
+  { "name": "CRLGMNT", "file": "Defines/CRLGMNT.json" }
+]
