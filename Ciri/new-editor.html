@@ -65,7 +65,7 @@
     window.galleryData = [];
 
     // Load manifest and populate selector
-    fetch("manifest.json")
+    fetch("Defines/manifest.json")
       .then(res => res.json())
       .then(manifest => {
         const selector = document.getElementById("jsonSelector");
