@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reorder Gallery</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    label, select {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+    .gallery-item {
+      background: #1e1e1e;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: grab;
+    }
+    .gallery-item.dragging {
+      opacity: 0.5;
+    }
+    .gallery-item img {
+      width: 100%;
+      display: block;
+    }
+    .export {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #6200ee;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reorder Gallery</h1>
+  
+  <label for="jsonSelector">Choose a gallery JSON:</label>
+  <select id="jsonSelector">
+    <option value="">-- Select a gallery --</option>
+  </select>
+
+  <div class="gallery" id="gallery"></div>
+  <button class="export" onclick="exportJSON()">Export Updated JSON</button>
+
+  <script>
+    let dragSrcEl = null;
+    window.galleryData = [];
+
+    // Load manifest and populate selector
+    fetch("manifest.json")
+      .then(res => res.json())
+      .then(manifest => {
+        const selector = document.getElementById("jsonSelector");
+        manifest.forEach(entry => {
+          const option = document.createElement("option");
+          option.value = entry.file;
+          option.textContent = entry.name;
+          selector.appendChild(option);
+        });
+      });
+
+    // Load selected gallery JSON
+    document.getElementById("jsonSelector").addEventListener("change", function (e) {
+      const file = e.target.value;
+      if (!file) return;
+
+      fetch(file)
+        .then(res => res.json())
+        .then(data => {
+          window.galleryData = data;
+          loadGallery(data);
+        });
+    });
+
+    function loadGallery(data) {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      data.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "gallery-item";
+        div.draggable = true;
+        div.dataset.index = index;
+
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.alt;
+
+        div.appendChild(img);
+        gallery.appendChild(div);
+
+        addDnDHandlers(div);
+      });
+    }
+
+    function addDnDHandlers(item) {
+      item.addEventListener("dragstart", e => {
+        dragSrcEl = item;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+
+      item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+      });
+
+      item.addEventListener("dragover", e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+
+      item.addEventListener("drop", e => {
+        e.stopPropagation();
+        if (dragSrcEl !== item) {
+          const gallery = document.getElementById("gallery");
+          const children = Array.from(gallery.children);
+
+          const srcIndex = children.indexOf(dragSrcEl);
+          const destIndex = children.indexOf(item);
+
+          if (srcIndex > -1 && destIndex > -1) {
+            const temp = window.galleryData[srcIndex];
+            window.galleryData.splice(srcIndex, 1);
+            window.galleryData.splice(destIndex, 0, temp);
+
+            loadGallery(window.galleryData);
+          }
+        }
+      });
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(window.galleryData, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "gallery.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
