@@ -109,10 +109,10 @@
     const activityFilter = document.getElementById("activity-filter");
 
     const tagCategories = {
-      artist: ["Meis", "Niodreth", "WIP"],
-      character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
-      visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
-      activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
+      artist: [""],
+      character: [""],
+      visual: [""],
+      activity: [""]
     };
 
     const selectedTags = {
@@ -148,7 +148,7 @@
       container.appendChild(label);
     }
 
-const jsonFiles = ["Defines/Meis.json", "Defines/Niodreth.json"]; // Add more as needed
+const jsonFiles = [""]; // Add more as needed
 
 Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())))
   .then(results => {
