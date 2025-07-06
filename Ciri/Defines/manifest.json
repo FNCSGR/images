@@ -1,4 +1,5 @@
 [
   { "name": "Meis", "file": "Meis.json" },
-  { "name": "Niodreth", "file": "Niodreth.json" }
+  { "name": "Niodreth", "file": "Niodreth.json" },
+  { "name": "CRLGMNT", "file": "CRLGMNT.json" }
 ]
