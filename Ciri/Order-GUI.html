@@ -156,7 +156,7 @@
       });
   // Derive a new export filename from the selected one
   //const baseName = currentFileName.replace(/\.json$/, ""); // remove .json
-  const exportName = `${currentFileName}-exported.json`; // append suffix
+  const exportName = `${currentFileName}`; // append suffix
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

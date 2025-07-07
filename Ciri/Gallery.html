@@ -232,10 +232,14 @@
       filterGallery();
     });
 
-    const jsonFiles = ["Defines/Meis.json", "Defines/Niodreth.json", "Defines/CRLGMNT.json"];
-    Promise.all(jsonFiles.map(file => fetch(file).then(r => r.json())))
-      .then(dataArrays => {
-        const images = dataArrays.flat();
+  fetch("manifest.json")
+  .then(res => res.json())
+  .then(manifest => {
+    const jsonFiles = manifest.map(entry => entry.file);
+    return Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())));
+  })
+  .then(allDataArrays => {
+    const merged = allDataArrays.flat();
 
         images.forEach(({ src, alt, tags }) => {
           const item = document.createElement("div");
