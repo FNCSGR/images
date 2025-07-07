@@ -83,7 +83,7 @@
       const file = e.target.value;
       if (!file) return;
 
-      currentFileName = file;
+      currentFileName = file.replace("Defines/", "");
 
       fetch(file)
         .then(res => res.json())
@@ -155,8 +155,8 @@
         type: "application/json",
       });
   // Derive a new export filename from the selected one
-  const baseName = currentFileName.replace(/\.json$/, ""); // remove .json
-  const exportName = `${baseName}-exported.json`; // append suffix
+  //const baseName = currentFileName.replace(/\.json$/, ""); // remove .json
+  const exportName = `${currentFileName}-exported.json`; // append suffix
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
