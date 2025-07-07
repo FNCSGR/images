@@ -141,9 +141,19 @@
     const characterFilter = document.getElementById("character-filter");
     const visualFilter = document.getElementById("visual-filter");
     const activityFilter = document.getElementById("activity-filter");
+    fetch('manifest.json')
+      .then(response => response.json())
+      .then(data => {
+        const jsonFiles = data.map(entry => entry.file);
+        const jsonNames = data.map(entry => entry.name);
+
+        console.log(jsonFiles); // ["Name1.json", "Name2.json", "Name3.json"]
+        console.log(jsonNames); // ["Name1", "Name2", "Name3"]
+      })
+      .catch(error => console.error('Error loading JSON:', error));
 
     const tagCategories = {
-      artist: ["Meis", "Niodreth", "WIP"],
+      artist: jsonNames,
       character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
       visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
       activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
@@ -232,14 +242,9 @@
       filterGallery();
     });
 
-  fetch("manifest.json")
-  .then(res => res.json())
-  .then(manifest => {
-    const jsonFiles = manifest.map(entry => entry.file);
-    return Promise.all(jsonFiles.map(file => fetch(file).then(res => res.json())));
-  })
-  .then(allDataArrays => {
-    const merged = allDataArrays.flat();
+    Promise.all(jsonFiles.map(file => fetch(file).then(r => r.json())))
+      .then(dataArrays => {
+        const images = dataArrays.flat();
 
         images.forEach(({ src, alt, tags }) => {
           const item = document.createElement("div");
