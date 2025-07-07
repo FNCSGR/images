@@ -4,9 +4,7 @@
   { "name": "Afu", "file": "Defines/Afu.json" },
   { "name": "Apone", "file": "Defines/Apone.json" },
   { "name": "Astex", "file": "Defines/Astex.json" },
-  { "name": "Athazel", "file": "Defines/Athazel.json" },
   { "name": "BhigBhee", "file": "Defines/BhigBhee.json" },
-  { "name": "Blendguardian", "file": "Defines/Blendguardian.json" },
   { "name": "CashmereChaos", "file": "Defines/CashmereChaos.json" },
   { "name": "CECK", "file": "Defines/CECK.json" },
   { "name": "Chad Rat", "file": "Defines/Chad Rat.json" },
@@ -32,9 +30,11 @@
   { "name": "Teko", "file": "Defines/Teko.json" },
   { "name": "TomoGanim", "file": "Defines/TomoGanim.json" },
   { "name": "Toughcookie", "file": "Defines/Toughcookie.json" },
-  { "name": "Vice", "file": "Defines/Vice.json" },
-  { "name": "WitcherRes", "file": "Defines/WitcherRes.json" },
   { "name": "wtfsths", "file": "Defines/wtfsths.json" },
   { "name": "zzzxxxccc", "file": "Defines/zzzxxxccc.json" },
-  { "name": "CRLGMNT", "file": "Defines/CRLGMNT.json" }
-] 
+  { "name": "CRLGMNT", "file": "Defines/CRLGMNT.json" },
+  { "name": "WitcherRes", "file": "Defines/WitcherRes.json" },
+  { "name": "Athazel", "file": "Defines/Athazel.json" },
+  { "name": "Blendguardian", "file": "Defines/Blendguardian.json" },
+  { "name": "Vice", "file": "Defines/Vice.json" }
+]
