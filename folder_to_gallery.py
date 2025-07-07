@@ -4,6 +4,7 @@ import json
 try:
     IMAGE_DIR = input("Mention artist name: \n")
     Full_Path = "Ciri/Source/" + IMAGE_DIR
+    Partial_Path = "Source/" + IMAGE_DIR
     print(f" Attempting connection to {Full_Path}")
 except:
     print("Image dir not found.")
@@ -29,7 +30,7 @@ def load_existing_entries():
 
 def main():
     current_files = {
-        f"{Full_Path}/{filename}"
+        f"{Partial_Path}/{filename}"
         for filename in os.listdir(Full_Path)
         if filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".webp"))
     }
