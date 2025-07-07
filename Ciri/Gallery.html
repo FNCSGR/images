@@ -78,14 +78,19 @@
       margin-bottom: 0.4rem;
     } 
     .filter-options {
-    column-count: 2;         /* Adjust as needed: 2 or 3 etc. */
     column-gap: 1rem;
     }
+    .filter-options.one-column {
+      column-count: 1;
+    }
+    .filter-options.two-columns {
+      column-count: 2;
+    }    
     .filter-options label {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     margin-bottom: 0.3rem;
     font-weight: bold;
     break-inside: avoid;
@@ -115,22 +120,22 @@
 
       <details class="filter-group" open>
         <summary>Artist</summary>
-        <div class="filter-options" id="artist-filter"></div>
+        <div class="filter-options two-columns" id="artist-filter"></div>
       </details>
 
       <details class="filter-group" open>
         <summary>Character</summary>
-        <div class="filter-options" id="character-filter"></div>
+        <div class="filter-options one-column" id="character-filter"></div>
       </details>
 
       <details class="filter-group" open>
         <summary>Visual</summary>
-        <div class="filter-options" id="visual-filter"></div>
+        <div class="filter-options one-column" id="visual-filter"></div>
       </details>
 
       <details class="filter-group" open>
         <summary>Activity</summary>
-        <div class="filter-options" id="activity-filter"></div>
+        <div class="filter-options one-column" id="activity-filter"></div>
       </details>
 
       <div class="filter-mode">
