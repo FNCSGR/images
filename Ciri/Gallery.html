@@ -39,7 +39,7 @@
       padding-bottom: 0;
     }
     .filters.expanded {
-      max-height: 1000px;
+      max-height: none;
       padding-top: 0.5rem;
       padding-bottom: 0.5rem;
     }
@@ -70,25 +70,25 @@
       margin-left: auto;
     }
     .filter-group {
-      display: flex;
-      flex-direction: column;
-      /*max-height: 100%; /* allow full height */
-      column-count: 2;   /* you can increase this to 3, 4, etc. */
-      column-gap: 1rem;
+      margin-bottom: 1rem;
     }
     .filter-group summary {
       cursor: pointer;
       font-weight: bold;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.4rem;
+    } 
+    .filter-options {
+    column-count: 2;         /* Adjust as needed: 2 or 3 etc. */
+    column-gap: 1rem;
     }
-    .filter-group label {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.9rem;
-      margin-bottom: 0.2rem;
-      font-weight: bold;
-      break-inside: avoid;
+    .filter-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    break-inside: avoid;
     }
     .gallery {
       display: grid;
@@ -108,36 +108,42 @@
   </style>
 </head>
 <body>
-  <header>
-    <div class="filters-wrapper">
-      <button class="filter-toggle" id="toggle-filters">Show Filters</button>
-      <div class="filters collapsed" id="filters-bar">
-        <details class="filter-group" open>
-          <summary>Artist</summary>
-          <div id="artist-filter"></div>
-        </details>
-        <details class="filter-group" open>
-          <summary>Character</summary>
-          <div id="character-filter"></div>
-        </details>
-        <details class="filter-group" open>
-          <summary>Visual</summary>
-          <div id="visual-filter"></div>
-        </details>
-        <details class="filter-group" open>
-          <summary>Activity</summary>
-          <div id="activity-filter"></div>
-        </details>
-        <div class="filter-mode">
-          <label for="filter-mode-toggle">Filter Mode:</label>
-          <select id="filter-mode-toggle">
-            <option value="any">Any</option>
-            <option value="all">All</option>
-          </select>
-        </div>
+<header>
+  <div class="filters-wrapper">
+    <button class="filter-toggle" id="toggle-filters">Show Filters</button>
+    <div class="filters collapsed" id="filters-bar">
+
+      <details class="filter-group" open>
+        <summary>Artist</summary>
+        <div class="filter-options" id="artist-filter"></div>
+      </details>
+
+      <details class="filter-group" open>
+        <summary>Character</summary>
+        <div class="filter-options" id="character-filter"></div>
+      </details>
+
+      <details class="filter-group" open>
+        <summary>Visual</summary>
+        <div class="filter-options" id="visual-filter"></div>
+      </details>
+
+      <details class="filter-group" open>
+        <summary>Activity</summary>
+        <div class="filter-options" id="activity-filter"></div>
+      </details>
+
+      <div class="filter-mode">
+        <label for="filter-mode-toggle">Filter Mode:</label>
+        <select id="filter-mode-toggle">
+          <option value="any">Any</option>
+          <option value="all">All</option>
+        </select>
       </div>
+
     </div>
-  </header>
+  </div>
+</header>
   <main class="gallery"></main>
 <script>
   const gallery = document.querySelector(".gallery");
