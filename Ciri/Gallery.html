@@ -141,6 +141,9 @@
     const characterFilter = document.getElementById("character-filter");
     const visualFilter = document.getElementById("visual-filter");
     const activityFilter = document.getElementById("activity-filter");
+    let jsonFiles = [];
+    let jsonNames = [];
+
     fetch('manifest.json')
       .then(response => response.json())
       .then(data => {
