@@ -135,140 +135,152 @@
     </div>
   </header>
   <main class="gallery"></main>
-  <script>
-    const gallery = document.querySelector(".gallery");
-    const artistFilter = document.getElementById("artist-filter");
-    const characterFilter = document.getElementById("character-filter");
-    const visualFilter = document.getElementById("visual-filter");
-    const activityFilter = document.getElementById("activity-filter");
-    let jsonFiles = [];
-    let jsonNames = [];
+<script>
+  const gallery = document.querySelector(".gallery");
+  const artistFilter = document.getElementById("artist-filter");
+  const characterFilter = document.getElementById("character-filter");
+  const visualFilter = document.getElementById("visual-filter");
+  const activityFilter = document.getElementById("activity-filter");
 
-    fetch('manifest.json')
-      .then(response => response.json())
-      .then(data => {
-        const jsonFiles = data.map(entry => entry.file);
-        const jsonNames = data.map(entry => entry.name);
+  let jsonFiles = [];
+  let jsonNames = [];
 
-        console.log(jsonFiles); // ["Name1.json", "Name2.json", "Name3.json"]
-        console.log(jsonNames); // ["Name1", "Name2", "Name3"]
-      })
-      .catch(error => console.error('Error loading JSON:', error));
+  const selectedTags = {
+    artist: new Set(),
+    character: new Set(),
+    visual: new Set(),
+    activity: new Set(),
+  };
 
-    const tagCategories = {
-      artist: jsonNames,
-      character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
-      visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
-      activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
-    };
+  const allItems = [];
+  let filterMode = "any";
 
-    const selectedTags = {
-      artist: new Set(),
-      character: new Set(),
-      visual: new Set(),
-      activity: new Set(),
-    };
+  function toggleFilters() {
+    document.getElementById("filters-bar").classList.toggle("active");
+  }
 
-    const allItems = [];
-    let filterMode = "any";
+  function createCheckbox(container, value, category) {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = value;
 
-    function toggleFilters() {
-      document.getElementById("filters-bar").classList.toggle("active");
-    }
-
-    function createCheckbox(container, value, category) {
-      const label = document.createElement("label");
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = value;
-
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          selectedTags[category].add(value);
-        } else {
-          selectedTags[category].delete(value);
-        }
-        filterGallery();
-      });
-
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
-      container.appendChild(label);
-    }
-
-    function filterGallery() {
-      allItems.forEach(item => {
-        const itemTags = item.dataset.tags.split(" ");
-
-        let matches = filterMode === "all";
-
-        for (const [category, tags] of Object.entries(selectedTags)) {
-          if (tags.size === 0) continue;
-
-          const tagArray = Array.from(tags);
-          const hasMatch = tagArray.some(tag => itemTags.includes(tag));
-          const hasAll = tagArray.every(tag => itemTags.includes(tag));
-
-          if (filterMode === "any" && hasMatch) {
-            matches = true;
-            break;
-          }
-
-          if (filterMode === "all" && !hasAll) {
-            matches = false;
-            break;
-          }
-        }
-
-        if (filterMode === "all") {
-          // In 'all' mode, must check every category with selected tags had all of its tags matched
-          matches = Object.entries(selectedTags).every(([category, tags]) => {
-            if (tags.size === 0) return true;
-            const tagArray = Array.from(tags);
-            return tagArray.every(tag => itemTags.includes(tag));
-          });
-        }
-
-        item.style.display = matches ? "block" : "none";
-      });
-    }
-
-    document.getElementById("toggle-filters").addEventListener("click", () => {
-      const filterBar = document.getElementById("filters-bar");
-      const expanded = filterBar.classList.toggle("expanded");
-      filterBar.classList.toggle("collapsed", !expanded);
-      document.getElementById("toggle-filters").textContent = expanded ? "Hide Filters" : "Show Filters";
-    });
-
-    document.getElementById("filter-mode-toggle").addEventListener("change", e => {
-      filterMode = e.target.value;
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedTags[category].add(value);
+      } else {
+        selectedTags[category].delete(value);
+      }
       filterGallery();
     });
 
-    Promise.all(jsonFiles.map(file => fetch(file).then(r => r.json())))
-      .then(dataArrays => {
-        const images = dataArrays.flat();
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
+    container.appendChild(label);
+  }
 
-        images.forEach(({ src, alt, tags }) => {
-          const item = document.createElement("div");
-          item.className = "gallery-item";
-          item.dataset.tags = tags.join(" ");
+  function filterGallery() {
+    allItems.forEach(item => {
+      const itemTags = item.dataset.tags.split(" ");
 
-          const img = document.createElement("img");
-          img.src = src;
-          img.alt = alt;
+      let matches = filterMode === "all";
 
-          item.appendChild(img);
-          gallery.appendChild(item);
+      for (const [category, tags] of Object.entries(selectedTags)) {
+        if (tags.size === 0) continue;
 
-          allItems.push(item);
-        });
+        const tagArray = Array.from(tags);
+        const hasMatch = tagArray.some(tag => itemTags.includes(tag));
+        const hasAll = tagArray.every(tag => itemTags.includes(tag));
 
-        for (const [category, values] of Object.entries(tagCategories)) {
-          const container = document.getElementById(`${category}-filter`);
-          values.forEach(value => createCheckbox(container, value, category));
+        if (filterMode === "any" && hasMatch) {
+          matches = true;
+          break;
         }
+
+        if (filterMode === "all" && !hasAll) {
+          matches = false;
+          break;
+        }
+      }
+
+      if (filterMode === "all") {
+        matches = Object.entries(selectedTags).every(([category, tags]) => {
+          if (tags.size === 0) return true;
+          const tagArray = Array.from(tags);
+          return tagArray.every(tag => itemTags.includes(tag));
+        });
+      }
+
+      item.style.display = matches ? "block" : "none";
+    });
+  }
+
+  document.getElementById("toggle-filters").addEventListener("click", () => {
+    const filterBar = document.getElementById("filters-bar");
+    const expanded = filterBar.classList.toggle("expanded");
+    filterBar.classList.toggle("collapsed", !expanded);
+    document.getElementById("toggle-filters").textContent = expanded ? "Hide Filters" : "Show Filters";
+  });
+
+  document.getElementById("filter-mode-toggle").addEventListener("change", e => {
+    filterMode = e.target.value;
+    filterGallery();
+  });
+
+  // 🧠 Our main function now
+  async function initializeGallery() {
+    try {
+      // 📦 Load manifest.json
+      const manifestResponse = await fetch("manifest.json");
+      const manifestData = await manifestResponse.json();
+
+      jsonFiles = manifestData.map(entry => entry.file);
+      jsonNames = manifestData.map(entry => entry.name);
+
+      const tagCategories = {
+        artist: jsonNames,
+        character: ["Solo", "Yen", "Triss", "Anna", "Twin", "Guards", "Werewolf"],
+        visual: ["Armpit", "Ass", "Tits", "Dick","Pussy", "Bush"],
+        activity: ["Handjob", "Oral", "Vaginal", "Anal", "Worship"]
+      };
+
+      // ⏳ Load all JSON files in parallel
+      const fileResponses = await Promise.all(
+        jsonFiles.map(file => fetch(file).then(r => r.json()))
+      );
+
+      const images = fileResponses.flat();
+
+      images.forEach(({ src, alt, tags }) => {
+        const item = document.createElement("div");
+        item.className = "gallery-item";
+        item.dataset.tags = tags.join(" ");
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = alt;
+
+        item.appendChild(img);
+        gallery.appendChild(item);
+
+        allItems.push(item);
       });
-  </script>
+
+      // ✅ Now create the checkboxes
+      for (const [category, values] of Object.entries(tagCategories)) {
+        const container = document.getElementById(`${category}-filter`);
+        values.forEach(value => {
+          if (value.trim() !== "") createCheckbox(container, value, category);
+        });
+      }
+
+    } catch (error) {
+      console.error("Error loading gallery:", error);
+    }
+  }
+
+  // 🚀 Run it
+  initializeGallery();
+</script>
 </body>
 </html>
