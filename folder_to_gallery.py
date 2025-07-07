@@ -1,8 +1,14 @@
 import os
 import json
 
-IMAGE_DIR = "new_images"
-OUTPUT_FILE = "new_gallery.json"
+try:
+    IMAGE_DIR = input("Mention artist name: \n")
+    Full_Path = "Ciri/Source/" + IMAGE_DIR
+    print(f" Attempting connection to {Full_Path}")
+except:
+    print("Image dir not found.")
+    
+OUTPUT_FILE = (f"Ciri/Defines/{IMAGE_DIR}.json")
 
 def guess_tags(filename):
     # Example: "sunset_beach.jpg" → ["sunset", "beach"]
@@ -23,8 +29,8 @@ def load_existing_entries():
 
 def main():
     current_files = {
-        f"{IMAGE_DIR}/{filename}"
-        for filename in os.listdir(IMAGE_DIR)
+        f"{Full_Path}/{filename}"
+        for filename in os.listdir(Full_Path)
         if filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".webp"))
     }
 
@@ -39,10 +45,10 @@ def main():
             updated[path] = {
                 "src": path,
                 "alt": filename,
-                "tags": ["untagged"] # guess_tags(filename) 
+                "tags": [f"{IMAGE_DIR}"] # guess_tags(filename) 
             }
 
-    # Optionally: warn about removed images
+    # Optionally: warn about removed imagesCRLGMNT
     removed = set(existing.keys()) - current_files
     if removed:
         print(f"🗑️ Removing {len(removed)} missing image(s):")

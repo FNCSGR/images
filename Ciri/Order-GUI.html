@@ -62,6 +62,7 @@
 
   <script>
     let dragSrcEl = null;
+    let currentFileName = "gallery.json"; // Default fallback
     window.galleryData = [];
 
     // Load manifest and populate selector
@@ -81,6 +82,8 @@
     document.getElementById("jsonSelector").addEventListener("change", function (e) {
       const file = e.target.value;
       if (!file) return;
+
+      currentFileName = file;
 
       fetch(file)
         .then(res => res.json())
@@ -151,12 +154,16 @@
       const blob = new Blob([JSON.stringify(window.galleryData, null, 2)], {
         type: "application/json",
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "gallery.json";
-      a.click();
-      URL.revokeObjectURL(url);
+  // Derive a new export filename from the selected one
+  const baseName = currentFileName.replace(/\.json$/, ""); // remove .json
+  const exportName = `${baseName}-exported.json`; // append suffix
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = exportName;
+  a.click();
+  URL.revokeObjectURL(url);
     }
   </script>
 </body>
