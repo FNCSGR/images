@@ -195,8 +195,16 @@
   }
 
   function filterGallery() {
+    const anyTagSelected = Object.values(selectedTags).some(tags => tags.size > 0);
+
     allItems.forEach(item => {
       const itemTags = item.dataset.tags.split(" ");
+
+      if (!anyTagSelected) {
+        // No tags selected: show all
+        item.style.display = "block";
+        return;
+      }
 
       let matches = filterMode === "all";
 
