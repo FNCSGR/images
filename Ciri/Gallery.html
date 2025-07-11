@@ -149,7 +149,7 @@
     </div>
   </div>
 </header>
-  <main class="gallery"></main>
+<main class="gallery"></main>
 <script>
   const gallery = document.querySelector(".gallery");
   const artistFilter = document.getElementById("artist-filter");
@@ -169,6 +169,9 @@
 
   const allItems = [];
   let filterMode = "any";
+  let imageQueue = [];
+  const BATCH_SIZE = 6;
+  let batchIndex = 0;
 
   function toggleFilters() {
     document.getElementById("filters-bar").classList.toggle("active");
@@ -201,7 +204,6 @@
       const itemTags = item.dataset.tags.split(" ");
 
       if (!anyTagSelected) {
-        // No tags selected: show all
         item.style.display = "block";
         return;
       }
@@ -250,10 +252,37 @@
     filterGallery();
   });
 
-  // 🧠 Our main function now
+  function loadNextBatch() {
+    const nextBatch = imageQueue.slice(batchIndex, batchIndex + BATCH_SIZE);
+
+    nextBatch.forEach(({ src, alt, tags }) => {
+      const item = document.createElement("div");
+      item.className = "gallery-item";
+      item.dataset.tags = tags.join(" ");
+
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = alt;
+
+      item.appendChild(img);
+      gallery.appendChild(item);
+      allItems.push(item);
+    });
+
+    batchIndex += BATCH_SIZE;
+    filterGallery();
+  }
+
+  window.addEventListener("scroll", () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+      if (batchIndex < imageQueue.length) {
+        loadNextBatch();
+      }
+    }
+  });
+
   async function initializeGallery() {
     try {
-      // 📦 Load manifest.json
       const manifestResponse = await fetch("manifest.json");
       const manifestData = await manifestResponse.json();
 
@@ -268,29 +297,12 @@
         activity: ["Handjob", "Kissing", "Blowjob", "Rimming", "Vaginal", "Anal", "Worship", "Facesitting", "Trio", "Quartet+"],
       };
 
-      // ⏳ Load all JSON files in parallel
       const fileResponses = await Promise.all(
         jsonFiles.map(file => fetch(file).then(r => r.json()))
       );
 
-      const images = fileResponses.flat();
+      imageQueue = fileResponses.flat();
 
-      images.forEach(({ src, alt, tags }) => {
-        const item = document.createElement("div");
-        item.className = "gallery-item";
-        item.dataset.tags = tags.join(" ");
-
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = alt;
-
-        item.appendChild(img);
-        gallery.appendChild(item);
-
-        allItems.push(item);
-      });
-
-      // ✅ Now create the checkboxes
       for (const [category, values] of Object.entries(tagCategories)) {
         const container = document.getElementById(`${category}-filter`);
         values.forEach(value => {
@@ -298,12 +310,12 @@
         });
       }
 
+      loadNextBatch();
     } catch (error) {
       console.error("Error loading gallery:", error);
     }
   }
 
-  // 🚀 Run it
   initializeGallery();
 </script>
 </body>
