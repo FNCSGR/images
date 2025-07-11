@@ -167,6 +167,8 @@
     activity: new Set(),
   };
 
+  const sensitiveTags = ["Werewolf", "Monster/Beast"];
+
   const allItems = [];
   let filterMode = "any";
   let imageQueue = [];
@@ -202,6 +204,16 @@
 
     allItems.forEach(item => {
       const itemTags = item.dataset.tags.split(" ");
+
+      // If item contains sensitive tags and they're not selected, hide it
+      const isSensitive = sensitiveTags.some(tag => itemTags.includes(tag));
+      const sensitiveTagSelected = sensitiveTags.some(tag =>
+        Object.values(selectedTags).some(set => set.has(tag))
+      );
+      if (isSensitive && !sensitiveTagSelected) {
+        item.style.display = "none";
+        return;
+      }
 
       if (!anyTagSelected) {
         item.style.display = "block";
