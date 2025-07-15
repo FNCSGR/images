@@ -3,13 +3,13 @@ import json
 
 try:
     IMAGE_DIR = input("Mention artist name: \n")
-    Full_Path = "Ciri/Source/" + IMAGE_DIR
+    Full_Path = "Vivienne/Source/" + IMAGE_DIR
     Partial_Path = "Source/" + IMAGE_DIR
     print(f" Attempting connection to {Full_Path}")
 except:
     print("Image dir not found.")
     
-OUTPUT_FILE = (f"Ciri/Defines/{IMAGE_DIR}.json")
+OUTPUT_FILE = (f"Vivienne/Defines/{IMAGE_DIR}.json")
 
 def guess_tags(filename):
     # Example: "sunset_beach.jpg" → ["sunset", "beach"]
