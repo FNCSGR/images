@@ -1,10 +1,10 @@
 [
-  { "name": "RudeFrog", "file": "Defines/RudeFrog.json" },
+  { "name": "Rude Frog", "file": "Defines/Rude Frog.json" },
   { "name": "Snoopz", "file": "Defines/Snoopz.json" },
+  { "name": "PervertMuffinMajima", "file": "Defines/PervertMuffinMajima.json" },
   { "name": "zzzxxxccc", "file": "Defines/zzzxxxccc.json" },
   { "name": "Nixmare", "file": "Defines/Nixmare.json" },
-  { "name": "HagiwaraStudio", "file": "Defines/HagiwaraStudio.json" },
+  { "name": "Hagiwara Studio", "file": "Defines/Hagiwara Studio.json" },
   { "name": "GRVTY", "file": "Defines/GRVTY.json" },
-  { "name": "PervertMuffinMajima", "file": "Defines/PervertMuffinMajima.json" },
   { "name": "Milapone", "file": "Defines/Milapone.json" }
 ]
