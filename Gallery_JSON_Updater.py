@@ -60,9 +60,11 @@ def save_json(images, output_file):
         json.dump(images, f, indent=2)
     print(f"✅ Saved {len(images)} entries to {output_file}")
 
+project = input("Enter Character name: \n")
+
 # Main
 if __name__ == "__main__":
-    post_id = input("Enter ImgChest post ID: ").strip() # Request post ID from user.
+    post_id = input("Enter ImgChest post ID: \n").strip() # Request post ID from user.
     token = API_TOKEN # Statically defined API token, 
     # this value should remain as is unless the API tokens are changed on the site itself.
     if not token:
@@ -73,7 +75,7 @@ if __name__ == "__main__":
         title_raw = post_data.get("data", {}).get("title", "untitled") # Grab the title from the data received.
         title_clean = sanitize_title(title_raw) # Run the santitization function to ensure title complies with Windows rules for filenames.
 
-        output_file = f"Defines/{title_clean}.json" # Establish full export filepath.
+        output_file = f"{project}/Defines/{title_clean}.json" # Establish full export filepath.
         title_tag = title_clean # Set up the artist tag based on the post title.
 
         images_data = post_data.get("data", {}).get("images", []) # Grab the image data from the API call
