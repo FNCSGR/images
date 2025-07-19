@@ -147,9 +147,9 @@ async function initializeGallery() {
       artist: jsonNames,
     };
     
-    if (typeof extraTagCategories !== "undefined") {
-    Object.assign(tagCategories, extraTagCategories);
-    }
+    //if (typeof extraTagCategories !== "undefined") {
+    //Object.assign(tagCategories, extraTagCategories);
+    //}
 
     const fileResponses = await Promise.all(
       jsonFiles.map(file => fetch(file).then(r => r.json()))
