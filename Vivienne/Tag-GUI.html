@@ -117,7 +117,7 @@
             image.alt = img.alt || "";
 
             const textarea = document.createElement("textarea");
-            textarea.placeholder = "Enter tags (space-separated)";
+            textarea.placeholder = 'Enter tags (use quotes for multi-word tags)';
             textarea.value = img.tags ? img.tags.join(" ") : "";
             textarea.dataset.index = index;
 
@@ -129,13 +129,25 @@
           document.getElementById("exportBtn").disabled = false;
         });
     }
+    
+    function parseTags(text) {
+      const regex = /"([^"]+)"|(\S+)/g;
+      const tags = [];
+      let match;
+
+      while ((match = regex.exec(text)) !== null) {
+        tags.push(match[1] || match[2]);
+     }
+
+    return tags;
+    }
 
     document.getElementById("exportBtn").addEventListener("click", () => {
       const updatedData = currentGalleryData.map((img, i) => {
         const text = document.querySelector(`textarea[data-index="${i}"]`).value;
         return {
           ...img,
-          tags: text.split(/\s+/).filter(Boolean)
+          tags: parseTags(text)
         };
       });
 
