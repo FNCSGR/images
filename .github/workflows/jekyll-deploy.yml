@@ -19,6 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Ruby gems
+        run: bundle install
+
       - name: Build Jekyll site
         run: bundle exec jekyll build
 
