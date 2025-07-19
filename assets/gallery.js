@@ -14,6 +14,8 @@ const selectedTags = {
   activity: new Set(),
 };
 
+import { extraTagCategories, sensitiveTags } from './tags.json'
+
 const allItems = [];
 let filterMode = "any";
 let imageQueue = [];
