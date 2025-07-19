@@ -135,7 +135,7 @@ document.getElementById("filter-mode-toggle").addEventListener("change", e => {
 
 async function initializeGallery() {
   try {
-    const manifestResponse = await fetch("/manifest.json");
+    const manifestResponse = await fetch("manifest.json");
     const manifestData = await manifestResponse.json();
 
     jsonFiles = manifestData.map(entry => entry.file);
