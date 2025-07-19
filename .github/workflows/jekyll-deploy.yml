@@ -43,3 +43,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        
+      - name: Disable script execution after deploy
+        shell: powershell
+        run: Set-ExecutionPolicy -ExecutionPolicy Restricted -Scope LocalMachine -Force
+
