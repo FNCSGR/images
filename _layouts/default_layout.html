@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ page.title }}</title>
-  <link rel="icon" href="/Icon.png" type="image/png" />
+  <link rel="icon" href="Icon.png" type="image/png" />
   <link rel="stylesheet" href="{{ '/assets/styles.css' | relative_url }}" />
 </head>
 <body>
@@ -12,7 +12,7 @@
   <div class="filters-wrapper">
     <button class="filter-toggle" id="toggle-filters">Show Filters</button>
     <div class="filters collapsed" id="filters-bar">
-      {{ page.filters | raw }}
+      {% include filters.html %}
       <div class="filter-mode">
         <label for="filter-mode-toggle">Filter Mode:</label>
         <select id="filter-mode-toggle">
