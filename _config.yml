@@ -18,6 +18,8 @@ include:
   - assets
   - Ciri
   - Vivienne
+  - "**/tags.js"
+
 
 # Enable required plugins (optional, depends on setup)
 plugins:

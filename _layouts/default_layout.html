@@ -26,6 +26,10 @@
 
 <main class="gallery"></main>
 
+{% assign topic_path = page.path | split: '/' | first %}
+<script src="/{{ topic_path }}/tags.js"></script>
+
+
 <script src="{{ '/assets/gallery.js' | relative_url }}"></script>
 </body>
 </html>
