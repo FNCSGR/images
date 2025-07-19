@@ -14,8 +14,6 @@ const selectedTags = {
   activity: new Set(),
 };
 
-//import { extraTagCategories, sensitiveTags } from 'tags.json'
-
 const allItems = [];
 let filterMode = "any";
 let imageQueue = [];
@@ -147,9 +145,8 @@ async function initializeGallery() {
       artist: jsonNames,
     };
     
-    //if (typeof extraTagCategories !== "undefined") {
-    //Object.assign(tagCategories, extraTagCategories);
-    //}
+    //if (typeof extraTagCategories !== "undefined") {}
+    Object.assign(tagCategories, extraTagCategories);
 
     const fileResponses = await Promise.all(
       jsonFiles.map(file => fetch(file).then(r => r.json()))
