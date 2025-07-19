@@ -16,10 +16,6 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Allow script execution for this session
-        shell: powershell
-        run: Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-
       - name: Checkout
         uses: actions/checkout@v4
 
