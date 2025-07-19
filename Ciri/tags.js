@@ -1,6 +1,5 @@
 const sensitiveTags = ["Werewolf", "Monster/Beast"];
 const tagCategories = {
-    artist: jsonNames,
     character: ["Solo", "Yen", "Triss", "Anna", "Cerys", "Bea", "Ves", "Orianna", "Philippa", "Keira", "Twin", "Guards", "Succubus", "Johnny", "Werewolf", "Tentacles", 
         "Nekker", "Drowner", "Fiend", "Monster/Beast"],
     visual: ["Armpit", "Feet", "Ass", "Tits", "Dick", "Pussy", "Bush", "Cum", "Bath", "POV", "Older"],

@@ -141,6 +141,10 @@ async function initializeGallery() {
     jsonFiles = manifestData.map(entry => entry.file);
     jsonNames = manifestData.map(entry => entry.name);
 
+    const tagCategories = {
+      artist: jsonNames,
+    };    
+
     const fileResponses = await Promise.all(
       jsonFiles.map(file => fetch(file).then(r => r.json()))
     );
