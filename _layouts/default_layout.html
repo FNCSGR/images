@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ page.title }}</title>
+  <link rel="icon" href="/Icon.png" type="image/png" />
+  <link rel="stylesheet" href="/images/assets/styles.css" />
+</head>
+<body>
+<header>
+  <div class="filters-wrapper">
+    <button class="filter-toggle" id="toggle-filters">Show Filters</button>
+    <div class="filters collapsed" id="filters-bar">
+      {{ page.filters | raw }}
+      <div class="filter-mode">
+        <label for="filter-mode-toggle">Filter Mode:</label>
+        <select id="filter-mode-toggle">
+          <option value="any">Any</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="gallery"></main>
+
+<script>
+  const sensitiveTags = {{ page.sensitiveTags | jsonify }};
+  const tagCategories = {{ page.tagCategories | jsonify }};
+</script>
+
+<script src="\images\assets\gallery.js"></script>
+</body>
+</html>
