@@ -1,0 +1,24 @@
+title: My Gallery Site
+description: A filterable image gallery with subpages
+theme: null  # Disable default Jekyll theme
+
+# Needed for GitHub Pages
+baseurl: "images"  # change this to your repo name if you're using GitHub Pages without a custom domain
+url: "https://fncsgr.github.io"      # leave blank for self-hosting or local builds
+
+# Optional defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default_layout
+
+# Include these folders/files during build (optional but good for non-post sites)
+include:
+  - assets
+  - Ciri
+  - Vivienne
+
+# Enable required plugins (optional, depends on setup)
+plugins:
+  - jekyll-relative-links
