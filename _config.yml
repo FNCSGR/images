@@ -22,3 +22,7 @@ include:
 # Enable required plugins (optional, depends on setup)
 plugins:
   - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: true
