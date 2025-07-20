@@ -54,11 +54,9 @@
 
   <label for="topicSelector">Choose a topic:</label>
   <select id="topicSelector">
-    <option value="">-- Select a topic --</option>
-    <option value="Ciri">Ciri</option>
-    <option value="Vivienne">Vivienne</option>
-    <!-- Add more topics here -->
+   <option value="">-- Select Topic --</option>
   </select>
+
 
   <label for="jsonSelector">Choose a gallery JSON:</label>
   <select id="jsonSelector" disabled>
@@ -74,9 +72,27 @@
     let currentTopic = "";
     let relativePath = "";
     window.galleryData = [];
+    function populateTopicSelector(selectorId) {
+      fetch("Characters.json")
+        .then(res => res.json())
+        .then(topics => {
+          const selector = document.getElementById(selectorId);
+          topics.forEach(topic => {
+            const option = document.createElement("option");
+            option.value = topic.folder;
+            option.textContent = topic.name;
+            selector.appendChild(option);
+           });
+        });
+}
+    populateTopicSelector("topicSelector");
+
 
     const topicSelector = document.getElementById("topicSelector");
     const jsonSelector = document.getElementById("jsonSelector");
+
+
+
 
     topicSelector.addEventListener("change", function () {
       const topic = this.value;
