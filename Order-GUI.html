@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reorder Gallery</title>
   <style>
     body {
@@ -51,11 +51,6 @@
 </head>
 <body>
   <h1>Reorder Gallery</h1>
-  <label for="CharacterSelector">Choose a Character:</label>
-  <select id="CharacterSelector">
-    <option value="">-- Select a Character --</option>
-  </select>
-  
 
   <label for="jsonSelector">Choose a gallery JSON:</label>
   <select id="jsonSelector">
@@ -67,34 +62,40 @@
 
   <script>
     let dragSrcEl = null;
-    let currentFileName = "gallery.json"; // Default fallback
+    let currentFileName = "";
+    let topicFolder = "";
     window.galleryData = [];
 
-    // Load manifest and populate selector
-    fetch("Vivienne/manifest.json")
+    // Load manifest.json from root and populate dropdown
+    fetch("/manifest.json")
       .then(res => res.json())
       .then(manifest => {
         const selector = document.getElementById("jsonSelector");
         manifest.forEach(entry => {
           const option = document.createElement("option");
-          option.value = entry.file;
+          option.value = entry.file; // e.g., "topic1/Defines/Blue.json"
           option.textContent = entry.name;
           selector.appendChild(option);
         });
       });
 
-    // Load selected gallery JSON
+    // When a file is selected
     document.getElementById("jsonSelector").addEventListener("change", function (e) {
       const file = e.target.value;
       if (!file) return;
 
-      currentFileName = file.replace("Defines/", "");
+      currentFileName = file.split("/").pop(); // Just "Blue.json"
+      topicFolder = file.split("/")[0]; // "topic1"
 
-      fetch(file)
+      fetch(`/${file}`)
         .then(res => res.json())
         .then(data => {
-          window.galleryData = data;
-          loadGallery(data);
+          // Prefix image paths with topic folder
+          window.galleryData = data.map(item => ({
+            ...item,
+            src: `/${topicFolder}/${item.src}`
+          }));
+          loadGallery(window.galleryData);
         });
     });
 
@@ -110,7 +111,7 @@
 
         const img = document.createElement("img");
         img.src = item.src;
-        img.alt = item.alt;
+        img.alt = item.alt || "";
 
         div.appendChild(img);
         gallery.appendChild(div);
@@ -156,19 +157,24 @@
     }
 
     function exportJSON() {
-      const blob = new Blob([JSON.stringify(window.galleryData, null, 2)], {
+      // Strip the prepended topic folder from image paths
+      const cleanData = window.galleryData.map(item => ({
+        ...item,
+        src: item.src.replace(`/${topicFolder}/`, "")
+      }));
+
+      const blob = new Blob([JSON.stringify(cleanData, null, 2)], {
         type: "application/json",
       });
-  // Derive a new export filename from the selected one
-  //const baseName = currentFileName.replace(/\.json$/, ""); // remove .json
-  const exportName = `${currentFileName}`; // append suffix
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = exportName;
-  a.click();
-  URL.revokeObjectURL(url);
+      const exportName = currentFileName;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = exportName;
+      a.click();
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
