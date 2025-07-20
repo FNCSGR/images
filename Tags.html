@@ -66,11 +66,9 @@
   <h1>Gallery Tag Editor</h1>
 
   <div class="controls">
+    <label for="topicSelector">Choose a topic:</label>
     <select id="topicSelector">
       <option value="">-- Select Topic --</option>
-      <option value="Ciri">Ciri</option>
-      <option value="Vivienne">Vivienne</option>
-      <!-- Add more topics here -->
     </select>
 
     <select id="jsonSelector" disabled>
@@ -87,6 +85,20 @@
     let currentFileName = "";
     let currentTopic = "";
     let relativePath = "";
+    function populateTopicSelector(selectorId) {
+      fetch("Characters.json")
+        .then(res => res.json())
+        .then(topics => {
+          const selector = document.getElementById(selectorId);
+          topics.forEach(topic => {
+            const option = document.createElement("option");
+            option.value = topic.folder;
+            option.textContent = topic.name;
+            selector.appendChild(option);
+           });
+        });
+}
+    populateTopicSelector("topicSelector");
 
     const topicSelector = document.getElementById("topicSelector");
     const jsonSelector = document.getElementById("jsonSelector");

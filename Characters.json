@@ -1,4 +1,5 @@
 [
     {"name": "Ciri", "folder": "Ciri"},
-    {"name": "Vivienne", "folder": "Vivienne"}
+    {"name": "Vivienne", "folder": "Vivienne"},
+    {"name": "Test", "folder": "Ciri"}
 ]
