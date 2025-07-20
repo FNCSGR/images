@@ -110,7 +110,9 @@ function loadNextBatch() {
   nextBatch.forEach(({ src, alt, tags }) => {
     const item = document.createElement("div");
     item.className = "gallery-item";
-    item.dataset.tags = tags.join(" ");
+    item.dataset.tags = tags.map(tag =>
+    tag.includes(" ") ? `"${tag}"` : tag
+    ).join(" ");
 
     const img = document.createElement("img");
     img.src = src;
