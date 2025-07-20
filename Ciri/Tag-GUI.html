@@ -118,7 +118,9 @@
 
             const textarea = document.createElement("textarea");
             textarea.placeholder = "Enter tags (space-separated)";
-            textarea.value = img.tags ? img.tags.join(" ") : "";
+            textarea.value = img.tags
+              ? img.tags.map(tag => (/\s/.test(tag) ? `"${tag}"` : tag)).join(" ")
+              : "";
             textarea.dataset.index = index;
 
             div.appendChild(image);
