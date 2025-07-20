@@ -40,11 +40,23 @@ function createCheckbox(container, value, category) {
   container.appendChild(label);
 }
 
+function parseTags(text) {
+  const regex = /"([^"]+)"|(\S+)/g;
+  const tags = [];
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    tags.push(match[1] || match[2]);
+  }
+
+  return tags;
+}
+
 function filterGallery() {
   const anyTagSelected = Object.values(selectedTags).some(tags => tags.size > 0);
 
   allItems.forEach(item => {
-    const itemTags = item.dataset.tags.split(" ");
+    const itemTags = parseTags(item.dataset.tags);
 
     const isSensitive = sensitiveTags.some(tag => itemTags.includes(tag));
     const sensitiveTagSelected = sensitiveTags.some(tag =>
@@ -142,7 +154,7 @@ async function initializeGallery() {
     jsonNames = manifestData.map(entry => entry.name);
 
     const tagCategories = {
-      artist: ["Rude Frog"],
+      artist: jsonNames,
     };
     
     //if (typeof extraTagCategories !== "undefined") {}
