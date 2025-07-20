@@ -156,7 +156,7 @@ async function initializeGallery() {
     jsonNames = manifestData.map(entry => entry.name);
 
     const tagCategories = {
-      artist: ["Rude Frog", "GRVTY"],
+      artist: jsonNames,
     };
     
     //if (typeof extraTagCategories !== "undefined") {}
