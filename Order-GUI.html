@@ -52,8 +52,16 @@
 <body>
   <h1>Reorder Gallery</h1>
 
+  <label for="topicSelector">Choose a topic:</label>
+  <select id="topicSelector">
+    <option value="">-- Select a topic --</option>
+    <option value="Ciri">Ciri</option>
+    <option value="Vivienne">Vivienne</option>
+    <!-- Add more topics here -->
+  </select>
+
   <label for="jsonSelector">Choose a gallery JSON:</label>
-  <select id="jsonSelector">
+  <select id="jsonSelector" disabled>
     <option value="">-- Select a gallery --</option>
   </select>
 
@@ -63,39 +71,52 @@
   <script>
     let dragSrcEl = null;
     let currentFileName = "";
-    let topicFolder = "";
+    let currentTopic = "";
+    let relativePath = "";
     window.galleryData = [];
 
-    // Load manifest.json from root and populate dropdown
-    fetch("/manifest.json")
-      .then(res => res.json())
-      .then(manifest => {
-        const selector = document.getElementById("jsonSelector");
-        manifest.forEach(entry => {
-          const option = document.createElement("option");
-          option.value = entry.file; // e.g., "topic1/Defines/Blue.json"
-          option.textContent = entry.name;
-          selector.appendChild(option);
-        });
-      });
+    const topicSelector = document.getElementById("topicSelector");
+    const jsonSelector = document.getElementById("jsonSelector");
 
-    // When a file is selected
-    document.getElementById("jsonSelector").addEventListener("change", function (e) {
-      const file = e.target.value;
+    topicSelector.addEventListener("change", function () {
+      const topic = this.value;
+      if (!topic) {
+        jsonSelector.disabled = true;
+        return;
+      }
+
+      currentTopic = topic;
+      const manifestPath = `${topic}/manifest.json`;
+      jsonSelector.disabled = true;
+      jsonSelector.innerHTML = `<option value="">-- Loading --</option>`;
+
+      fetch(manifestPath)
+        .then(res => res.json())
+        .then(manifest => {
+          jsonSelector.innerHTML = `<option value="">-- Select a gallery --</option>`;
+          manifest.forEach(entry => {
+            const option = document.createElement("option");
+            option.value = entry.file; // e.g. "Defines/collection_1.json"
+            option.textContent = entry.name;
+            jsonSelector.appendChild(option);
+          });
+          jsonSelector.disabled = false;
+        });
+    });
+
+    jsonSelector.addEventListener("change", function () {
+      const file = this.value;
       if (!file) return;
 
-      currentFileName = file.split("/").pop(); // Just "Blue.json"
-      topicFolder = file.split("/")[0]; // "topic1"
+      currentFileName = file.split("/").pop(); // e.g. collection_1.json
+      relativePath = `${currentTopic}/${file}`; // Full fetchable path
 
-      fetch(`/${file}`)
+      fetch(relativePath)
         .then(res => res.json())
         .then(data => {
-          // Prefix image paths with topic folder
-          window.galleryData = data.map(item => ({
-            ...item,
-            src: `/${topicFolder}/${item.src}`
-          }));
-          loadGallery(window.galleryData);
+          // No path rewriting needed; use src as-is
+          window.galleryData = data;
+          loadGallery(data);
         });
     });
 
@@ -157,18 +178,11 @@
     }
 
     function exportJSON() {
-      // Strip the prepended topic folder from image paths
-      const cleanData = window.galleryData.map(item => ({
-        ...item,
-        src: item.src.replace(`/${topicFolder}/`, "")
-      }));
-
-      const blob = new Blob([JSON.stringify(cleanData, null, 2)], {
+      const blob = new Blob([JSON.stringify(window.galleryData, null, 2)], {
         type: "application/json",
       });
 
       const exportName = currentFileName;
-
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
