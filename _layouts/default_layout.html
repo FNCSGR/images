@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <!-- This document contains the default layout for all gallery pages, do not alter without keeping that mind. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ page.title }}</title>
-  <link rel="icon" href="Icon.png" type="image/png" />
-  <link rel="stylesheet" href="{{ '/assets/styles.css' | relative_url }}" />
+  <title>{{ page.title }}</title> <!-- Get the page title defined in the local index file of the characters directory. -->
+  <link rel="icon" href="Icon.png" type="image/png" /> <!-- Fetches the local icon to display in the browser tab. -->
+  <link rel="stylesheet" href="{{ '/assets/styles.css' | relative_url }}" /> <!-- Imports the css styles file to determine the define the visuals of the page. -->
 </head>
 <body>
 <header>
-  <div class="filters-wrapper">
+  <div class="filters-wrapper"> <!-- Sets up the filters component, normally hidden but expandable on the page and with two different modes. -->
     <button class="filter-toggle" id="toggle-filters">Show Filters</button>
     <div class="filters collapsed" id="filters-bar">
-      {% include filters.html %}
-      <div class="filter-mode">
+      {% include filters.html %} <!-- Fetches the filters.html file from _includes.  -->
+      <div class="filter-mode"> 
         <label for="filter-mode-toggle">Filter Mode:</label>
         <select id="filter-mode-toggle">
           <option value="any">Any</option>

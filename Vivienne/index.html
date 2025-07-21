@@ -1,7 +1,9 @@
 ---
-layout: default_layout
-title: "Vivienne's Gallery"
-filters: |
+layout: default_layout <!-- This defines which layout to use, keep this set to the name of the gallery layout file under _layouts in the root folder. -->
+title: "Vivienne's Gallery" <!-- This defines the name of the tab, set to match the Character name. -->
+filters: | 
+<!-- This defines the number of columns per filter category on the page. Given that the amount of tags per category varies per page this element is best of being
+tailored per page instead of defined globally. -->
   <div class="filter-group">
     <details open>
       <summary>Artist</summary>
@@ -9,7 +11,7 @@ filters: |
     </details>
     <details open>
       <summary>Character</summary>
-      <div class="filter-options two-columns" id="character-filter"></div>
+      <div class="filter-options one-column" id="character-filter"></div>
     </details>
     <details open>
       <summary>Visual</summary>
