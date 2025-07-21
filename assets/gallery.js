@@ -1,26 +1,26 @@
-const gallery = document.querySelector(".gallery");
+const gallery = document.querySelector(".gallery"); // Calls in the filters as previously established, so the script can make the filtering happen.
 const artistFilter = document.getElementById("artist-filter");
 const characterFilter = document.getElementById("character-filter");
 const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
-let jsonFiles = [];
+let jsonFiles = []; // Establishes these two variables for later assigment when the manifest json is loaded.
 let jsonNames = [];
 
-const selectedTags = {
+const selectedTags = { // Get the tags established too.
   artist: new Set(),
   character: new Set(),
   visual: new Set(),
   activity: new Set(),
 };
-
-const allItems = [];
+ 
+const allItems = []; // Currently redundant batch loading, needs rework.
 let filterMode = "any";
 let imageQueue = [];
 const BATCH_SIZE = 500;
 let batchIndex = 0;
 
-function createCheckbox(container, value, category) {
+function createCheckbox(container, value, category) { // This function creates the checkboxes so users can select the tags they wish to see.
   const label = document.createElement("label");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -32,15 +32,15 @@ function createCheckbox(container, value, category) {
     } else {
       selectedTags[category].delete(value);
     }
-    filterGallery();
+    filterGallery(); // Call filterGallery everytime the user updates their selection to filter the gallery based on the new selection.
   });
 
   label.appendChild(checkbox);
   label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
-  container.appendChild(label);
+  container.appendChild(label); 
 }
 
-function parseTags(text) {
+function parseTags(text) { // Define the fuction for reading the tags from the json files.
   const regex = /"([^"]+)"|(\S+)/g;
   const tags = [];
   let match;
@@ -52,8 +52,8 @@ function parseTags(text) {
   return tags;
 }
 
-function filterGallery() {
-  const anyTagSelected = Object.values(selectedTags).some(tags => tags.size > 0);
+function filterGallery() { // This function filters the gallery based on user selection. 
+  const anyTagSelected = Object.values(selectedTags).some(tags => tags.size > 0); // Only filter if tags have been selected, and show all* images if not. (*Except sensitive ones)
 
   allItems.forEach(item => {
     const itemTags = parseTags(item.dataset.tags);
@@ -62,7 +62,7 @@ function filterGallery() {
     const sensitiveTagSelected = sensitiveTags.some(tag =>
       Object.values(selectedTags).some(set => set.has(tag))
     );
-    if (isSensitive && !sensitiveTagSelected) {
+    if (isSensitive && !sensitiveTagSelected) { // Filter out sensitive tags unless they're selected.
       item.style.display = "none";
       return;
     }
@@ -104,7 +104,7 @@ function filterGallery() {
   });
 }
 
-function loadNextBatch() {
+function loadNextBatch() { // Redundant batching feature, needs rework.
   const nextBatch = imageQueue.slice(batchIndex, batchIndex + BATCH_SIZE);
 
   nextBatch.forEach(({ src, alt, tags }) => {
@@ -147,20 +147,20 @@ document.getElementById("filter-mode-toggle").addEventListener("change", e => {
   filterGallery();
 });
 
-async function initializeGallery() {
+async function initializeGallery() { // Loads the gallery by opening the manifest and then parsing all images and tags.
   try {
     const manifestResponse = await fetch("manifest.json");
     const manifestData = await manifestResponse.json();
 
-    jsonFiles = manifestData.map(entry => entry.file);
-    jsonNames = manifestData.map(entry => entry.name);
+    jsonFiles = manifestData.map(entry => entry.file); // Get the file names out of the manifest for correct pathing to the image jsons.
+    jsonNames = manifestData.map(entry => entry.name); // Get the artist names out of the manifest for the filters.
 
     const tagCategories = {
-      artist: jsonNames,
+      artist: jsonNames, // Base the contents of the artist filter group on the names of the artists in the manifest, this means they update automatically and are user-error proof.
     };
     
-    //if (typeof extraTagCategories !== "undefined") {}
-    Object.assign(tagCategories, extraTagCategories);
+    //if (typeof extraTagCategories !== "undefined") {} THIS LINE HAS BEEN COMMENTED OUT AS IT BROKE THE SCRIPT 
+    Object.assign(tagCategories, extraTagCategories); // Merge the artist category with the other categories that are defined in tags.json, this is why this script needs to be ran after.
 
     const fileResponses = await Promise.all(
       jsonFiles.map(file => fetch(file).then(r => r.json()))

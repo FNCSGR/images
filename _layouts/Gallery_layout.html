@@ -12,12 +12,12 @@
   <div class="filters-wrapper"> <!-- Sets up the filters component, normally hidden but expandable on the page and with two different modes. -->
     <button class="filter-toggle" id="toggle-filters">Show Filters</button>
     <div class="filters collapsed" id="filters-bar">
-      {% include filters.html %} <!-- Fetches the filters.html file from _includes.  -->
+      {% include filters.html %} <!-- Fetches the filters.html file from _includes, this file determines how many filters there are.  -->
       <div class="filter-mode"> 
-        <label for="filter-mode-toggle">Filter Mode:</label>
-        <select id="filter-mode-toggle">
-          <option value="any">Any</option>
-          <option value="all">All</option>
+        <label for="filter-mode-toggle">Filter Mode:</label> <!-- This allows the user to change between filter modes as desired. -->
+        <select id="filter-mode-toggle"> 
+          <option value="any">Any</option> <!-- In Any mode images will be shown if they have at least one of the filtered tags. -->
+          <option value="all">All</option> <!-- In All mode images will only be shown if they have every selected tag. -->
         </select>
       </div>
     </div>
@@ -26,8 +26,8 @@
 
 <main class="gallery"></main>
 
-<script src="tags.js"></script>
-<script src="{{ '/assets/gallery.js' | relative_url }}"></script>
+<script src="tags.js"></script> <!-- Loads the tags that are relevant for the character in question. NEEDS TO HAPPEN BEFORE GALLERY.JS -->
+<script src="{{ '/assets/gallery.js' | relative_url }}"></script> <!-- Calls the normal gallery script, this script requires that the filters + tags are already loaded. -->
 
 </body>
 </html>
