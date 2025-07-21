@@ -12,7 +12,7 @@
   <div class="filters-wrapper"> <!-- Sets up the filters component, normally hidden but expandable on the page and with two different modes. -->
     <button class="filter-toggle" id="toggle-filters">Show Filters</button>
     <div class="filters collapsed" id="filters-bar">
-      {{ page.filters }} <!-- Fetches the filters.html file from _includes.  -->
+      {% include filters.html %} <!-- Fetches the filters.html file from _includes.  -->
       <div class="filter-mode"> 
         <label for="filter-mode-toggle">Filter Mode:</label>
         <select id="filter-mode-toggle">
