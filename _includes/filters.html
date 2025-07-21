@@ -1,6 +1,19 @@
-{% for group in page.filter_groups %}
 <details class="filter-group" open>
-  <summary>{{ group.title }}</summary>
-  <div class="filter-options {{ group.layout | default: 'one-column' }}" id="{{ group.id }}"></div>
+  <summary>Artist</summary>
+  <div class="filter-options {{ page.filter_layouts.artist | default: 'one-column' }}" id="artist-filter"></div>
 </details>
-{% endfor %}
+
+<details class="filter-group" open>
+  <summary>Character</summary>
+  <div class="filter-options {{ page.filter_layouts.character | default: 'one-column' }}" id="character-filter"></div>
+</details>
+
+<details class="filter-group" open>
+  <summary>Visual</summary>
+  <div class="filter-options {{ page.filter_layouts.visual | default: 'one-column' }}" id="visual-filter"></div>
+</details>
+
+<details class="filter-group" open>
+  <summary>Activity</summary>
+  <div class="filter-options {{ page.filter_layouts.activity | default: 'one-column' }}" id="activity-filter"></div>
+</details>
