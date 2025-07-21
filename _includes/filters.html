@@ -1,19 +1,6 @@
+{% for group in page.filter_groups %}
 <details class="filter-group" open>
-  <summary>Artist</summary>
-  <div class="filter-options two-columns" id="artist-filter"></div>
+  <summary>{{ group.title }}</summary>
+  <div class="filter-options {{ group.layout | default: 'one-column' }}" id="{{ group.id }}"></div>
 </details>
-
-<details class="filter-group" open>
-  <summary>Character</summary>
-  <div class=page.filterOne id="character-filter"></div>
-</details>
-
-<details class="filter-group" open>
-  <summary>Visual</summary>
-  <div class="filter-options one-column" id="visual-filter"></div>
-</details>
-
-<details class="filter-group" open>
-  <summary>Activity</summary>
-  <div class="filter-options one-column" id="activity-filter"></div>
-</details>
+{% endfor %}
