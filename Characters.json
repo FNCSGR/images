@@ -1,5 +1,10 @@
 [
     {"name": "Ciri", "folder": "Ciri"},
     {"name": "Vivienne", "folder": "Vivienne"},
-    {"name": "Rosemary", "folder": "Rosemary"}
+    {"name": "Mia", "folder": "Mia"},
+    {"name": "Rosemary", "folder": "Rosemary"},
+    {"name": "Ashley", "folder": "Ashley"},
+    {"name": "Sherry", "folder": "Sherry"},
+    {"name": "Ada", "folder": "Ada"},
+    {"name": "Jill", "folder": "Jill"}
 ]

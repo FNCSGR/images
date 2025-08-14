@@ -66,8 +66,6 @@ def save_json(images, output_file):
         json.dump(images, f, indent=2)
     print(f"✅ Saved {len(images)} entries to {output_file}")
 
-project = input("Enter Character name: \n")
-
 # Main
 if __name__ == "__main__":
     post_id = input("Enter ImgChest post ID: \n").strip() # Request post ID from user.
@@ -81,15 +79,26 @@ if __name__ == "__main__":
         title_raw = post_data.get("data", {}).get("title", "untitled") # Grab the title from the data received.
         title_clean = sanitize_title(title_raw) # Run the santitization function to ensure title complies with Windows rules for filenames.
 
-        output_file = f"{project}/Defines/{title_clean}.json" # Establish full export filepath.
         title_tag = [title_clean] # Set up the artist tag based on the post title.
 
         images_data = post_data.get("data", {}).get("images", []) # Grab the image data from the API call
         new_images = build_image_list(images_data, title_tag) # Build the JSON based on the title and image data.
-        existing_images = load_existing_json(output_file) # Load existing JSON if it exists, using the same name. 
-        merged_images = merge_images(existing_images, new_images) # Merge the new and old JSON's to ensure updating goes correctly.
 
-        save_json(merged_images, output_file) # Export the new JSON by calling the function.
+        # Get all unique tags (character names) so the images can be assigned to their respective characters.
+        all_tags = sorted({tag for img in new_images for tag in img.get("tags", [])})
+        all_tags.remove(title_clean) # Remove the title tag from the list, it's included in the actual tags for the images but it's not a character.
+
+        for tag in all_tags: #Loop over every character
+            filtered = [img for img in new_images if tag in img.get("tags", [])] # Filter
+
+            # Determine output path
+            tag_file = f"{tag}/Defines/{title_clean}.json"
+            existing_images = load_existing_json(tag_file) # Check if the file already exists, we don't want to overwrite existing images with customization.
+            merged_images = merge_images(existing_images, filtered) # Perform the merge for a uniform list of old + new.
+
+            save_json(merged_images, tag_file) # Export the new JSON by calling the function.
+
+        print(f"📂 Created {len(all_tags)} tag-based JSON files.")
     except requests.HTTPError as e:
         print(f"❌ HTTP Error: {e}")
     except Exception as e:
