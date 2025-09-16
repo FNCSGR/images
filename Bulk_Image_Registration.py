@@ -2,6 +2,7 @@ import requests # Library for API calls
 import json # Library for JSON structure
 import os # Library for handling filepaths
 import re # Library for handing file names
+import copy # Required for optimal tag assigment
 from API_Token import API_TOKEN
 
 # Run API call
@@ -88,13 +89,19 @@ if __name__ == "__main__":
         all_tags = sorted({tag for img in new_images for tag in img.get("tags", [])})
         all_tags.remove(title_clean) # Remove the title tag from the list, it's included in the actual tags for the images but it's not a character.
 
-        for tag in all_tags: #Loop over every character
-            filtered = [img for img in new_images if tag in img.get("tags", [])] # Filter
+        for Tag in all_tags: #Loop over every character
+            filtered = [img for img in new_images if Tag in img.get("tags", [])]  # Filter
+            processed = [] # Prepare empty list for processing
+            for item in filtered: # Loop over every image in the list
+                # Make a deep copy so the original isn't modified
+                copy_item = copy.deepcopy(item)
+                copy_item["tags"] = [tag for tag in copy_item["tags"] if tag != Tag] # Remove the characters own tag from the tags, as it serves no purpose within their own gallery.
+                processed.append(copy_item) # Output new tag list            
 
             # Determine output path
-            tag_file = f"{tag}/Defines/{title_clean}.json"
+            tag_file = f"{Tag}/Defines/{title_clean}.json"
             existing_images = load_existing_json(tag_file) # Check if the file already exists, we don't want to overwrite existing images with customization.
-            merged_images = merge_images(existing_images, filtered) # Perform the merge for a uniform list of old + new.
+            merged_images = merge_images(existing_images, processed) # Perform the merge for a uniform list of old + new.
 
             save_json(merged_images, tag_file) # Export the new JSON by calling the function.
 
