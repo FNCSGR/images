@@ -4,6 +4,12 @@ const characterFilter = document.getElementById("character-filter");
 const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
+const platformIcons = { // Define all platforms that can be linked too here.
+  twitter: "../assets/twitter.png",
+  bsky: "../assets/bsky.png"
+};
+
+
 let jsonFiles = []; // Establishes these two variables for later assigment when the manifest json is loaded.
 let jsonNames = [];
 let artistRegistry = {};
@@ -135,21 +141,25 @@ function loadNextBatch() {
     header.appendChild(nameSpan);
 
     const socials = artistRegistry[artist];
-    if (socials && socials.x) {
-      const link = document.createElement("a");
-      link.href = socials.x;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.className = "artist-social";
 
-      const icon = document.createElement("img");
-      icon.src = "../assets/x.png";
-      icon.alt = "Twitter / X";
+    if (socials) {
+      for (const [platform, url] of Object.entries(socials)) {
+        if (!platformIcons[platform]) continue;
 
-      link.appendChild(icon);
-      header.appendChild(link);
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "artist-social";
+
+        const icon = document.createElement("img");
+        icon.src = platformIcons[platform];
+        icon.alt = platform;
+
+        link.appendChild(icon);
+        header.appendChild(link);
+      }
     }
-
 
     section.appendChild(header);
 
