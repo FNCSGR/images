@@ -133,7 +133,7 @@ function loadNextBatch() {
 
     const header = document.createElement("div");
     header.className = "artist-header";
-    
+
     const nameSpan = document.createElement("span");
     nameSpan.textContent = artist;
 
@@ -148,7 +148,7 @@ function loadNextBatch() {
       link.className = "artist-social";
 
       const icon = document.createElement("img");
-      icon.src = "icons/twitter.png";
+      icon.src = "assets/twitter.png";
       icon.alt = "Twitter / X";
 
       link.appendChild(icon);
