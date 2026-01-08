@@ -4,14 +4,9 @@ const characterFilter = document.getElementById("character-filter");
 const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
-const artistSocials = {
-  "Rude Frog": {
-    x: "https://x.com/RF42__"
-  }
-}
-
 let jsonFiles = []; // Establishes these two variables for later assigment when the manifest json is loaded.
 let jsonNames = [];
+let artistRegistry = {};
 
 const selectedTags = { // Get the tags established too.
   artist: new Set(),
@@ -139,7 +134,7 @@ function loadNextBatch() {
 
     header.appendChild(nameSpan);
 
-    const socials = artistSocials[artist];
+    const socials = artistRegistry[artist];
     if (socials && socials.x) {
       const link = document.createElement("a");
       link.href = socials.x;
@@ -209,6 +204,9 @@ async function initializeGallery() { // Loads the gallery by opening the manifes
   try {
     const manifestResponse = await fetch("manifest.json");
     const manifestData = await manifestResponse.json();
+
+    const artistResponse = await fetch("../artists.json");
+    artistRegistry = await artistResponse.json();
 
     jsonFiles = manifestData.map(entry => entry.file); // Get the file names out of the manifest for correct pathing to the image jsons.
     jsonNames = manifestData.map(entry => entry.name); // Get the artist names out of the manifest for the filters.
