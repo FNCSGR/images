@@ -148,7 +148,7 @@ function loadNextBatch() {
       link.className = "artist-social";
 
       const icon = document.createElement("img");
-      icon.src = "x.png";
+      icon.src = "../assets/x.png";
       icon.alt = "Twitter / X";
 
       link.appendChild(icon);

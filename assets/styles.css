@@ -150,10 +150,12 @@ header {
 
 .artist-header::after {
   content: "";
-  display: block;
+  flex-basis: 100%;
+  height: 0;
   border-bottom: 2px solid white;
   margin-top: 0.5rem;
 }
+
 
 .artist-gallery {
   display: grid;
