@@ -102,6 +102,12 @@ function filterGallery() { // This function filters the gallery based on user se
 
     item.style.display = matches ? "block" : "none";
   });
+  
+  document.querySelectorAll(".artist-section").forEach(section => { // This filters out empty artist category names
+  const visibleItems = section.querySelectorAll(".gallery-item:not([style*='display: none'])");
+  section.style.display = visibleItems.length ? "block" : "none";
+});
+
 }
 
 function loadNextBatch() {
