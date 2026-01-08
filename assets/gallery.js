@@ -5,7 +5,7 @@ const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
 const platformIcons = { // Define all platforms that can be linked too here.
-  twitter: "../assets/twitter.png",
+  twitter: "../assets/x.png",
   bsky: "../assets/bsky.png"
 };
 
