@@ -140,15 +140,15 @@ function loadNextBatch() {
     header.appendChild(nameSpan);
 
     const socials = artistSocials[artist];
-    if (socials && socials.twitter) {
+    if (socials && socials.x) {
       const link = document.createElement("a");
-      link.href = socials.twitter;
+      link.href = socials.x;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.className = "artist-social";
 
       const icon = document.createElement("img");
-      icon.src = "assets/twitter.png";
+      icon.src = "assets/x.png";
       icon.alt = "Twitter / X";
 
       link.appendChild(icon);
