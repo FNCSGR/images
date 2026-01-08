@@ -135,6 +135,7 @@ header {
   display: flex;
   align-items: center;
   gap: 0.8rem;
+  flex-wrap: wrap;
 }
 
 .artist-social img {
@@ -150,8 +151,7 @@ header {
 
 .artist-header::after {
   content: "";
-  flex-basis: 100%;
-  height: 0;
+  width: 100%;
   border-bottom: 2px solid white;
   margin-top: 0.5rem;
 }
