@@ -4,6 +4,12 @@ const characterFilter = document.getElementById("character-filter");
 const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
+const artistSocials = {
+  "Rude Frog": {
+    x: "https://x.com/RF42__"
+  }
+}
+
 let jsonFiles = []; // Establishes these two variables for later assigment when the manifest json is loaded.
 let jsonNames = [];
 
@@ -127,7 +133,28 @@ function loadNextBatch() {
 
     const header = document.createElement("div");
     header.className = "artist-header";
-    header.textContent = artist;
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = artist;
+
+    header.appendChild(nameSpan);
+
+    const socials = artistSocials[artist];
+    if (socials && socials.twitter) {
+      const link = document.createElement("a");
+      link.href = socials.twitter;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "artist-social";
+
+      const icon = document.createElement("img");
+      icon.src = "icons/twitter.png";
+      icon.alt = "Twitter / X";
+
+      link.appendChild(icon);
+      header.appendChild(link);
+    }
+
 
     section.appendChild(header);
 
