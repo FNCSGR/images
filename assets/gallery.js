@@ -104,24 +104,49 @@ function filterGallery() { // This function filters the gallery based on user se
   });
 }
 
-function loadNextBatch() { // Redundant batching feature, needs rework.
+function loadNextBatch() {
   const nextBatch = imageQueue.slice(batchIndex, batchIndex + BATCH_SIZE);
 
-  nextBatch.forEach(({ src, alt, tags }) => {
-    const item = document.createElement("div");
-    item.className = "gallery-item";
-    item.dataset.tags = tags.map(tag =>
-    tag.includes(" ") ? `"${tag}"` : tag
-    ).join(" ");
+  const grouped = {};
 
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = alt;
-
-    item.appendChild(img);
-    gallery.appendChild(item);
-    allItems.push(item);
+  nextBatch.forEach(img => {
+    if (!grouped[img.artist]) grouped[img.artist] = [];
+    grouped[img.artist].push(img);
   });
+
+  for (const [artist, images] of Object.entries(grouped)) {
+
+    const section = document.createElement("div");
+    section.className = "artist-section";
+
+    const header = document.createElement("div");
+    header.className = "artist-header";
+    header.textContent = artist;
+
+    section.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "artist-gallery";
+
+    images.forEach(({ src, alt, tags }) => {
+      const item = document.createElement("div");
+      item.className = "gallery-item";
+      item.dataset.tags = tags.map(tag =>
+        tag.includes(" ") ? `"${tag}"` : tag
+      ).join(" ");
+
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = alt;
+
+      item.appendChild(img);
+      grid.appendChild(item);
+      allItems.push(item);
+    });
+
+    section.appendChild(grid);
+    gallery.appendChild(section);
+  }
 
   batchIndex += BATCH_SIZE;
   filterGallery();
@@ -163,8 +188,18 @@ async function initializeGallery() { // Loads the gallery by opening the manifes
     Object.assign(tagCategories, extraTagCategories); // Merge the artist category with the other categories that are defined in tags.json, this is why this script needs to be ran after.
 
     const fileResponses = await Promise.all(
-      jsonFiles.map(file => fetch(file).then(r => r.json()))
+      jsonFiles.map((file, index) =>
+        fetch(file).then(r => r.json()).then(images =>
+          images.map(img => ({
+            ...img,
+            artist: jsonNames[index]
+          }))
+        )
+      )
     );
+
+imageQueue = fileResponses.flat();
+
 
     imageQueue = fileResponses.flat();
 

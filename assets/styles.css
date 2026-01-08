@@ -119,3 +119,23 @@ header {
   width: 100%;
   display: block;
 }
+
+.artist-section {
+  margin-bottom: 3rem;
+}
+
+.artist-header {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid white;
+  margin-bottom: 1rem;
+}
+
+.artist-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 0 1rem;
+}
