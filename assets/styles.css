@@ -131,7 +131,7 @@ header {
   color: #fff;
   font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -152,7 +152,7 @@ header {
   content: "";
   display: block;
   border-bottom: 2px solid white;
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .artist-gallery {
