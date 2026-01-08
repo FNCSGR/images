@@ -103,9 +103,9 @@ header {
 }
 
 .gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
   padding: 1rem;
 }
 
@@ -121,21 +121,26 @@ header {
 }
 
 .artist-section {
-  margin-bottom: 3rem;
+  width: 100%;
 }
 
 .artist-header {
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
-  padding: 0.5rem 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.artist-header::after {
+  content: "";
+  display: block;
   border-bottom: 2px solid white;
-  margin-bottom: 1rem;
+  margin-top: 0.4rem;
 }
 
 .artist-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
-  padding: 0 1rem;
+  margin-top: 1rem;
 }
