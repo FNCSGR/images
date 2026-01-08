@@ -177,6 +177,12 @@ function loadNextBatch() {
       img.src = src;
       img.alt = alt;
 
+      img.style.cursor = "pointer";
+
+      img.addEventListener("click", () => {
+        window.open(src, "_blank", "noopener");
+      })
+
       item.appendChild(img);
       grid.appendChild(item);
       allItems.push(item);
