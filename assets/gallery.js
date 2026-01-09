@@ -6,7 +6,9 @@ const activityFilter = document.getElementById("activity-filter");
 
 const platformIcons = { // Define all platforms that can be linked too here.
   x: "../assets/x.png",
-  bsky: "../assets/bsky.png"
+  bsky: "../assets/bsky.png",
+  patreon: "../assets/patreon.png",
+  substar: "../assets/substar.png"
 };
 
 
