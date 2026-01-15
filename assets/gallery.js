@@ -77,19 +77,28 @@ function imageMatches(img) {
   );
 }
 
-function applyFiltersAndReset() {
+async function applyFiltersAndReset() {
   filteredQueue = imageQueue.filter(imageMatches);
   renderIndex = 0;
   gallery.innerHTML = "";
   artistSections.clear();
-  loadNextBatch();
 
-  // auto-fill viewport if too short
+  loadNextBatch();
+  await fillViewport();
+}
+
+async function fillViewport() {
+  let safety = 0;
+
   while (
-    sentinel.getBoundingClientRect().top < window.innerHeight &&
-    renderIndex + BATCH_SIZE < filteredQueue.length
+    sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
+    renderIndex < filteredQueue.length &&
+    safety < 10
   ) {
     loadNextBatch();
+    safety++;
+
+    await new Promise(r => requestAnimationFrame(r));
   }
 }
 
