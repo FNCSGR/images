@@ -161,10 +161,17 @@ function loadNextBatch() {
 
 const observer = new IntersectionObserver(entries => {
   if (!entries[0].isIntersecting) return;
-  if (renderIndex < filteredQueue.length) loadNextBatch();
-}, { rootMargin: "300px" });
 
-observer.observe(sentinel);
+  observer.unobserve(sentinel);
+
+  loadNextBatch();
+
+  requestAnimationFrame(() => {
+    if (renderIndex < filteredQueue.length) {
+      observer.observe(sentinel);
+    }
+  });
+}, { rootMargin: "300px" });
 
 /* ---------------- UI ---------------- */
 
