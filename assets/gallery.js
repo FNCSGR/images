@@ -1,20 +1,18 @@
 const gallery = document.querySelector(".gallery");
+const sentinel = document.createElement("div");
+sentinel.id = "scroll-sentinel";
+gallery.after(sentinel);
 
-const artistFilter = document.getElementById("artist-filter");
-const characterFilter = document.getElementById("character-filter");
-const visualFilter = document.getElementById("visual-filter");
-const activityFilter = document.getElementById("activity-filter");
-
-const platformIcons = { // Define the paths for the icons of all platforms that can be linked to here.
+const platformIcons = {
   x: "../assets/x.png",
   bsky: "../assets/bsky.png",
   patreon: "../assets/patreon.png",
   substar: "../assets/substar.png"
 };
 
+let artistRegistry = {};
 let jsonFiles = [];
 let jsonNames = [];
-let artistRegistry = {};
 
 const selectedTags = {
   artist: new Set(),
@@ -27,9 +25,11 @@ let filterMode = "any";
 
 const BATCH_SIZE = 20;
 
-let imageQueue = [];      // full dataset
-let filteredQueue = [];   // filtered dataset
-let renderIndex = 0;      // pagination index
+let imageQueue = [];
+let filteredQueue = [];
+let renderIndex = 0;
+
+const artistSections = new Map();
 
 /* ---------------- TAG HELPERS ---------------- */
 
@@ -43,23 +43,12 @@ function createCheckbox(container, value, category) {
     checkbox.checked
       ? selectedTags[category].add(value)
       : selectedTags[category].delete(value);
-
     applyFiltersAndReset();
   });
 
   label.appendChild(checkbox);
   label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
   container.appendChild(label);
-}
-
-function parseTags(text) {
-  const regex = /"([^"]+)"|(\S+)/g;
-  const tags = [];
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    tags.push(match[1] || match[2]);
-  }
-  return tags;
 }
 
 /* ---------------- FILTERING ---------------- */
@@ -83,7 +72,6 @@ function imageMatches(img) {
     );
   }
 
-  // filterMode === "all"
   return Object.values(selectedTags).every(set =>
     [...set].every(tag => itemTags.includes(tag))
   );
@@ -93,7 +81,54 @@ function applyFiltersAndReset() {
   filteredQueue = imageQueue.filter(imageMatches);
   renderIndex = 0;
   gallery.innerHTML = "";
+  artistSections.clear();
   loadNextBatch();
+}
+
+/* ---------------- ARTIST SECTION MANAGEMENT ---------------- */
+
+function getArtistSection(artist) {
+  if (artistSections.has(artist)) return artistSections.get(artist);
+
+  const section = document.createElement("div");
+  section.className = "artist-section";
+
+  const header = document.createElement("div");
+  header.className = "artist-header";
+
+  const nameSpan = document.createElement("span");
+  nameSpan.textContent = artist;
+  header.appendChild(nameSpan);
+
+  const socials = artistRegistry[artist];
+  if (socials) {
+    for (const [platform, url] of Object.entries(socials)) {
+      if (!platformIcons[platform]) continue;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "artist-social";
+
+      const icon = document.createElement("img");
+      icon.src = platformIcons[platform];
+      icon.alt = platform;
+
+      link.appendChild(icon);
+      header.appendChild(link);
+    }
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "artist-gallery";
+
+  section.appendChild(header);
+  section.appendChild(grid);
+  gallery.appendChild(section);
+
+  artistSections.set(artist, grid);
+  return grid;
 }
 
 /* ---------------- RENDERING ---------------- */
@@ -102,89 +137,36 @@ function loadNextBatch() {
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
   if (!next.length) return;
 
-  const grouped = {};
+  next.forEach(({ src, alt, tags, artist }) => {
+    const grid = getArtistSection(artist);
 
-  next.forEach(img => {
-    if (!grouped[img.artist]) grouped[img.artist] = [];
-    grouped[img.artist].push(img);
+    const item = document.createElement("div");
+    item.className = "gallery-item";
+    item.dataset.tags = tags.map(t => t.includes(" ") ? `"${t}"` : t).join(" ");
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt;
+    img.style.cursor = "pointer";
+    img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
+
+    item.appendChild(img);
+    grid.appendChild(item);
   });
-
-  for (const [artist, images] of Object.entries(grouped)) {
-    const section = document.createElement("div");
-    section.className = "artist-section";
-
-    const header = document.createElement("div");
-    header.className = "artist-header";
-
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = artist;
-    header.appendChild(nameSpan);
-
-    const socials = artistRegistry[artist];
-    if (socials) {
-      for (const [platform, url] of Object.entries(socials)) {
-        if (!platformIcons[platform]) continue;
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.className = "artist-social";
-
-        const icon = document.createElement("img");
-        icon.src = platformIcons[platform];
-        icon.alt = platform;
-
-        link.appendChild(icon);
-        header.appendChild(link);
-      }
-    }
-
-    section.appendChild(header);
-
-    const grid = document.createElement("div");
-    grid.className = "artist-gallery";
-
-    images.forEach(({ src, alt, tags }) => {
-      const item = document.createElement("div");
-      item.className = "gallery-item";
-      item.dataset.tags = tags.map(t => t.includes(" ") ? `"${t}"` : t).join(" ");
-
-      const img = document.createElement("img");
-      img.src = src;
-      img.alt = alt;
-      img.style.cursor = "pointer";
-      img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
-
-      item.appendChild(img);
-      grid.appendChild(item);
-    });
-
-    section.appendChild(grid);
-    gallery.appendChild(section);
-  }
 
   renderIndex += BATCH_SIZE;
 }
 
-/* ---------------- SCROLL ---------------- */
+/* ---------------- INTERSECTION OBSERVER ---------------- */
 
-window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-    if (renderIndex < filteredQueue.length) {
-      loadNextBatch();
-    }
-  }
-});
+const observer = new IntersectionObserver(entries => {
+  if (!entries[0].isIntersecting) return;
+  if (renderIndex < filteredQueue.length) loadNextBatch();
+}, { rootMargin: "300px" });
+
+observer.observe(sentinel);
 
 /* ---------------- UI ---------------- */
-
-document.getElementById("toggle-filters").addEventListener("click", () => {
-  const filterBar = document.getElementById("filters-bar");
-  const expanded = filterBar.classList.toggle("expanded");
-  filterBar.classList.toggle("collapsed", !expanded);
-  document.getElementById("toggle-filters").textContent = expanded ? "Hide Filters" : "Show Filters";
-});
 
 document.getElementById("filter-mode-toggle").addEventListener("change", e => {
   filterMode = e.target.value;
@@ -195,32 +177,24 @@ document.getElementById("filter-mode-toggle").addEventListener("change", e => {
 
 async function initializeGallery() {
   try {
-    const manifestResponse = await fetch("manifest.json");
-    const manifestData = await manifestResponse.json();
+    const manifest = await fetch("manifest.json").then(r => r.json());
+    artistRegistry = await fetch("../artists.json").then(r => r.json());
 
-    const artistResponse = await fetch("../artists.json");
-    artistRegistry = await artistResponse.json();
-
-    jsonFiles = manifestData.map(e => e.file);
-    jsonNames = manifestData.map(e => e.name);
+    jsonFiles = manifest.map(e => e.file);
+    jsonNames = manifest.map(e => e.name);
 
     const tagCategories = { artist: jsonNames };
     Object.assign(tagCategories, extraTagCategories);
 
-    const fileResponses = await Promise.all(
-      jsonFiles.map((file, index) =>
-        fetch(file)
-          .then(r => r.json())
-          .then(images =>
-            images.map(img => ({
-              ...img,
-              artist: jsonNames[index]
-            }))
-          )
+    const responses = await Promise.all(
+      jsonFiles.map((file, i) =>
+        fetch(file).then(r => r.json()).then(images =>
+          images.map(img => ({ ...img, artist: jsonNames[i] }))
+        )
       )
     );
 
-    imageQueue = fileResponses.flat();
+    imageQueue = responses.flat();
 
     for (const [category, values] of Object.entries(tagCategories)) {
       const container = document.getElementById(`${category}-filter`);
@@ -229,8 +203,8 @@ async function initializeGallery() {
 
     applyFiltersAndReset();
 
-  } catch (error) {
-    console.error("Error loading gallery:", error);
+  } catch (err) {
+    console.error("Gallery load error:", err);
   }
 }
 
