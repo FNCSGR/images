@@ -95,7 +95,7 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    sentinel.getBoundingClientRect().top < window.innerHeight + 500 &&
+    sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
     safety < 10
   ) {
