@@ -83,10 +83,13 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
+  observer.unobserve(sentinel);
+
   loadNextBatch();
   await fillViewport();
-}
 
+  observer.observe(sentinel);
+}
 
 async function fillViewport() {
   let safety = 0;
