@@ -1,136 +1,115 @@
-const gallery = document.querySelector(".gallery"); // Calls in the filters as previously established, so the script can make the filtering happen.
+const gallery = document.querySelector(".gallery");
+
 const artistFilter = document.getElementById("artist-filter");
 const characterFilter = document.getElementById("character-filter");
 const visualFilter = document.getElementById("visual-filter");
 const activityFilter = document.getElementById("activity-filter");
 
-const platformIcons = { // Define all platforms that can be linked too here.
+const platformIcons = { // Define the paths for the icons of all platforms that can be linked to here.
   x: "../assets/x.png",
   bsky: "../assets/bsky.png",
   patreon: "../assets/patreon.png",
   substar: "../assets/substar.png"
 };
 
-
-let jsonFiles = []; // Establishes these two variables for later assigment when the manifest json is loaded.
+let jsonFiles = [];
 let jsonNames = [];
 let artistRegistry = {};
 
-const selectedTags = { // Get the tags established too.
+const selectedTags = {
   artist: new Set(),
   character: new Set(),
   visual: new Set(),
   activity: new Set(),
 };
- 
-const allItems = []; // Currently redundant batch loading, needs rework.
-let filterMode = "any";
-let imageQueue = [];
-const BATCH_SIZE = 500;
-let batchIndex = 0;
 
-function createCheckbox(container, value, category) { // This function creates the checkboxes so users can select the tags they wish to see.
+let filterMode = "any";
+
+const BATCH_SIZE = 20;
+
+let imageQueue = [];      // full dataset
+let filteredQueue = [];   // filtered dataset
+let renderIndex = 0;      // pagination index
+
+/* ---------------- TAG HELPERS ---------------- */
+
+function createCheckbox(container, value, category) {
   const label = document.createElement("label");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.value = value;
 
   checkbox.addEventListener("change", () => {
-    if (checkbox.checked) {
-      selectedTags[category].add(value);
-    } else {
-      selectedTags[category].delete(value);
-    }
-    filterGallery(); // Call filterGallery everytime the user updates their selection to filter the gallery based on the new selection.
+    checkbox.checked
+      ? selectedTags[category].add(value)
+      : selectedTags[category].delete(value);
+
+    applyFiltersAndReset();
   });
 
   label.appendChild(checkbox);
   label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
-  container.appendChild(label); 
+  container.appendChild(label);
 }
 
-function parseTags(text) { // Define the fuction for reading the tags from the json files.
+function parseTags(text) {
   const regex = /"([^"]+)"|(\S+)/g;
   const tags = [];
   let match;
-
   while ((match = regex.exec(text)) !== null) {
     tags.push(match[1] || match[2]);
   }
-
   return tags;
 }
 
-function filterGallery() { // This function filters the gallery based on user selection. 
-  const anyTagSelected = Object.values(selectedTags).some(tags => tags.size > 0); // Only filter if tags have been selected, and show all* images if not. (*Except sensitive ones)
+/* ---------------- FILTERING ---------------- */
 
-  allItems.forEach(item => {
-    const itemTags = parseTags(item.dataset.tags);
+function imageMatches(img) {
+  const itemTags = img.tags;
 
-    const isSensitive = sensitiveTags.some(tag => itemTags.includes(tag));
-    const sensitiveTagSelected = sensitiveTags.some(tag =>
-      Object.values(selectedTags).some(set => set.has(tag))
+  const anyTagSelected = Object.values(selectedTags).some(s => s.size);
+
+  const isSensitive = sensitiveTags.some(t => itemTags.includes(t));
+  const sensitiveSelected = sensitiveTags.some(t =>
+    Object.values(selectedTags).some(s => s.has(t))
+  );
+
+  if (isSensitive && !sensitiveSelected) return false;
+  if (!anyTagSelected) return true;
+
+  if (filterMode === "any") {
+    return Object.values(selectedTags).some(set =>
+      [...set].some(tag => itemTags.includes(tag))
     );
-    if (isSensitive && !sensitiveTagSelected) { // Filter out sensitive tags unless they're selected.
-      item.style.display = "none";
-      return;
-    }
+  }
 
-    if (!anyTagSelected) {
-      item.style.display = "block";
-      return;
-    }
-
-    let matches = filterMode === "all";
-
-    for (const [category, tags] of Object.entries(selectedTags)) {
-      if (tags.size === 0) continue;
-
-      const tagArray = Array.from(tags);
-      const hasMatch = tagArray.some(tag => itemTags.includes(tag));
-      const hasAll = tagArray.every(tag => itemTags.includes(tag));
-
-      if (filterMode === "any" && hasMatch) {
-        matches = true;
-        break;
-      }
-
-      if (filterMode === "all" && !hasAll) {
-        matches = false;
-        break;
-      }
-    }
-
-    if (filterMode === "all") {
-      matches = Object.entries(selectedTags).every(([category, tags]) => {
-        if (tags.size === 0) return true;
-        const tagArray = Array.from(tags);
-        return tagArray.every(tag => itemTags.includes(tag));
-      });
-    }
-
-    item.style.display = matches ? "block" : "none";
-  });
-  
-  document.querySelectorAll(".artist-section").forEach(section => { // This filters out empty artist category names
-  const visibleItems = section.querySelectorAll(".gallery-item:not([style*='display: none'])");
-  section.style.display = visibleItems.length ? "block" : "none";
-});
-
+  // filterMode === "all"
+  return Object.values(selectedTags).every(set =>
+    [...set].every(tag => itemTags.includes(tag))
+  );
 }
 
+function applyFiltersAndReset() {
+  filteredQueue = imageQueue.filter(imageMatches);
+  renderIndex = 0;
+  gallery.innerHTML = "";
+  loadNextBatch();
+}
+
+/* ---------------- RENDERING ---------------- */
+
 function loadNextBatch() {
-  const nextBatch = imageQueue.slice(batchIndex, batchIndex + BATCH_SIZE);
+  const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
+  if (!next.length) return;
 
   const grouped = {};
 
-  nextBatch.forEach(img => {
+  next.forEach(img => {
     if (!grouped[img.artist]) grouped[img.artist] = [];
     grouped[img.artist].push(img);
   });
 
   for (const [artist, images] of Object.entries(grouped)) {
-
     const section = document.createElement("div");
     section.className = "artist-section";
 
@@ -139,11 +118,9 @@ function loadNextBatch() {
 
     const nameSpan = document.createElement("span");
     nameSpan.textContent = artist;
-
     header.appendChild(nameSpan);
 
     const socials = artistRegistry[artist];
-
     if (socials) {
       for (const [platform, url] of Object.entries(socials)) {
         if (!platformIcons[platform]) continue;
@@ -171,40 +148,36 @@ function loadNextBatch() {
     images.forEach(({ src, alt, tags }) => {
       const item = document.createElement("div");
       item.className = "gallery-item";
-      item.dataset.tags = tags.map(tag =>
-        tag.includes(" ") ? `"${tag}"` : tag
-      ).join(" ");
+      item.dataset.tags = tags.map(t => t.includes(" ") ? `"${t}"` : t).join(" ");
 
       const img = document.createElement("img");
       img.src = src;
       img.alt = alt;
-
       img.style.cursor = "pointer";
-
-      img.addEventListener("click", () => {
-        window.open(src, "_blank", "noopener");
-      })
+      img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
 
       item.appendChild(img);
       grid.appendChild(item);
-      allItems.push(item);
     });
 
     section.appendChild(grid);
     gallery.appendChild(section);
   }
 
-  batchIndex += BATCH_SIZE;
-  filterGallery();
+  renderIndex += BATCH_SIZE;
 }
+
+/* ---------------- SCROLL ---------------- */
 
 window.addEventListener("scroll", () => {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-    if (batchIndex < imageQueue.length) {
+    if (renderIndex < filteredQueue.length) {
       loadNextBatch();
     }
   }
 });
+
+/* ---------------- UI ---------------- */
 
 document.getElementById("toggle-filters").addEventListener("click", () => {
   const filterBar = document.getElementById("filters-bar");
@@ -215,10 +188,12 @@ document.getElementById("toggle-filters").addEventListener("click", () => {
 
 document.getElementById("filter-mode-toggle").addEventListener("change", e => {
   filterMode = e.target.value;
-  filterGallery();
+  applyFiltersAndReset();
 });
 
-async function initializeGallery() { // Loads the gallery by opening the manifest and then parsing all images and tags.
+/* ---------------- INIT ---------------- */
+
+async function initializeGallery() {
   try {
     const manifestResponse = await fetch("manifest.json");
     const manifestData = await manifestResponse.json();
@@ -226,40 +201,34 @@ async function initializeGallery() { // Loads the gallery by opening the manifes
     const artistResponse = await fetch("../artists.json");
     artistRegistry = await artistResponse.json();
 
-    jsonFiles = manifestData.map(entry => entry.file); // Get the file names out of the manifest for correct pathing to the image jsons.
-    jsonNames = manifestData.map(entry => entry.name); // Get the artist names out of the manifest for the filters.
+    jsonFiles = manifestData.map(e => e.file);
+    jsonNames = manifestData.map(e => e.name);
 
-    const tagCategories = {
-      artist: jsonNames, // Base the contents of the artist filter group on the names of the artists in the manifest, this means they update automatically and are user-error proof.
-    };
-    
-    //if (typeof extraTagCategories !== "undefined") {} THIS LINE HAS BEEN COMMENTED OUT AS IT BROKE THE SCRIPT 
-    Object.assign(tagCategories, extraTagCategories); // Merge the artist category with the other categories that are defined in tags.json, this is why this script needs to be ran after.
+    const tagCategories = { artist: jsonNames };
+    Object.assign(tagCategories, extraTagCategories);
 
     const fileResponses = await Promise.all(
       jsonFiles.map((file, index) =>
-        fetch(file).then(r => r.json()).then(images =>
-          images.map(img => ({
-            ...img,
-            artist: jsonNames[index]
-          }))
-        )
+        fetch(file)
+          .then(r => r.json())
+          .then(images =>
+            images.map(img => ({
+              ...img,
+              artist: jsonNames[index]
+            }))
+          )
       )
     );
-
-imageQueue = fileResponses.flat();
-
 
     imageQueue = fileResponses.flat();
 
     for (const [category, values] of Object.entries(tagCategories)) {
       const container = document.getElementById(`${category}-filter`);
-      values.forEach(value => {
-        if (value.trim() !== "") createCheckbox(container, value, category);
-      });
+      values.forEach(v => v.trim() && createCheckbox(container, v, category));
     }
 
-    loadNextBatch();
+    applyFiltersAndReset();
+
   } catch (error) {
     console.error("Error loading gallery:", error);
   }
