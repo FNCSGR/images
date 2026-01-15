@@ -23,7 +23,7 @@ const selectedTags = {
 
 let filterMode = "any";
 
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 20;
 
 let imageQueue = [];
 let filteredQueue = [];
