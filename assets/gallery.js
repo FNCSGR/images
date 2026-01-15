@@ -85,15 +85,11 @@ function applyFiltersAndReset() {
   loadNextBatch();
 
   // auto-fill viewport if too short
-  let safety = 0;
-
   while (
     sentinel.getBoundingClientRect().top < window.innerHeight &&
-    renderIndex < filteredQueue.length &&
-    safety < 5
+    renderIndex + BATCH_SIZE < filteredQueue.length
   ) {
     loadNextBatch();
-    safety++;
   }
 }
 
