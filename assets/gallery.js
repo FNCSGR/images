@@ -83,8 +83,6 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  observer.unobserve(sentinel);
-
   loadNextBatch();
   await fillViewport();
 
