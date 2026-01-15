@@ -83,8 +83,6 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  observer.unobserve(sentinel);
-
   loadNextBatch();
   await fillViewport();
 
@@ -179,14 +177,19 @@ function loadNextBatch() {
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
+let isLoading = false;
+
 const observer = new IntersectionObserver(entries => {
   if (!entries[0].isIntersecting) return;
+  if (isLoading) return;
 
-  observer.unobserve(sentinel);
+  isLoading = true;
 
   loadNextBatch();
 
   requestAnimationFrame(() => {
+    isLoading = false;
+
     if (renderIndex < filteredQueue.length) {
       observer.observe(sentinel);
     }
