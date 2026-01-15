@@ -173,6 +173,9 @@ const observer = new IntersectionObserver(entries => {
   });
 }, { rootMargin: "300px" });
 
+while (sentinel.getBoundingClientRect().top < window.innerHeight && renderIndex < filteredQueue.length) {
+  loadNextBatch();
+}
 /* ---------------- UI ---------------- */
 
 document.getElementById("filter-mode-toggle").addEventListener("change", e => {
