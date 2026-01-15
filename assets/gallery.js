@@ -85,9 +85,8 @@ async function applyFiltersAndReset() {
 
   loadNextBatch();
   await fillViewport();
-
-  observer.observe(sentinel);
 }
+
 
 async function fillViewport() {
   let safety = 0;
