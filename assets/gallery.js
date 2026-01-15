@@ -23,7 +23,7 @@ const selectedTags = {
 
 let filterMode = "any";
 
-const BATCH_SIZE = 20;
+const BATCH_SIZE = 10;
 
 let imageQueue = [];
 let filteredQueue = [];
@@ -171,6 +171,14 @@ observer.observe(sentinel);
 document.getElementById("filter-mode-toggle").addEventListener("change", e => {
   filterMode = e.target.value;
   applyFiltersAndReset();
+});
+
+document.getElementById("toggle-filters").addEventListener("click", () => {
+  const filterBar = document.getElementById("filters-bar");
+  const expanded = filterBar.classList.toggle("expanded");
+  filterBar.classList.toggle("collapsed", !expanded);
+  document.getElementById("toggle-filters").textContent =
+    expanded ? "Hide Filters" : "Show Filters";
 });
 
 /* ---------------- INIT ---------------- */
