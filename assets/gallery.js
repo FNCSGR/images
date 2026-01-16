@@ -201,15 +201,24 @@ async function loadNextBatch() {
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-const observer = new IntersectionObserver(entries => {
+const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  loadNextBatch();
+
+  await fillViewport();
+
+  // If sentinel is STILL in view, force another pass
+  requestAnimationFrame(() => {
+    const rect = sentinel.getBoundingClientRect();
+    if (rect.top <= window.innerHeight + 200) {
+      fillViewport();
+    }
+  });
+
 }, {
   root: null,
   rootMargin: "300px",
   threshold: 0
 });
-
 
 /* ---------------- UI ---------------- */
 
