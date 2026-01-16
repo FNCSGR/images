@@ -87,6 +87,7 @@ async function applyFiltersAndReset() {
 
   gallery.appendChild(sentinel);
 
+  observer.unobserve(sentinel);
   observer.observe(sentinel);
 
   await fillViewport();
@@ -96,12 +97,13 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    document.body.scrollHeight <= window.innerHeight &&
+    sentinel.getBoundingClientRect().top <= window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
-    safety < 10
+    safety < 20
   ) {
     await loadNextBatch();
     safety++;
+    await new Promise(r => requestAnimationFrame(r));
   }
 }
 
