@@ -97,15 +97,21 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    sentinel.getBoundingClientRect().top <= window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
-    safety < 20
+    safety < 30
   ) {
     const loaded = await loadNextBatch();
     if (!loaded) break;
 
-    safety++;
+    // force layout flush before checking sentinel again
     await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
+
+    if (sentinel.getBoundingClientRect().top > window.innerHeight + 200) {
+      break;
+    }
+
+    safety++;
   }
 }
 
