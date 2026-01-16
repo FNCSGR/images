@@ -193,6 +193,7 @@ async function loadNextBatch() {
   await Promise.all(loadPromises);
 
   batchInProgress = false;
+  await new Promise(r => requestAnimationFrame(r));
   return true;
 }
 
