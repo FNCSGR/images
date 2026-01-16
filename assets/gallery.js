@@ -96,18 +96,18 @@ async function applyFiltersAndReset() {
 async function fillViewport() {
   let safety = 0;
 
-  while (
-    renderIndex < filteredQueue.length &&
-    safety < 30
-  ) {
+  while (renderIndex < filteredQueue.length && safety < 30) {
     const loaded = await loadNextBatch();
     if (!loaded) break;
 
-    // force layout flush before checking sentinel again
+    // allow layout to update
     await new Promise(r => requestAnimationFrame(r));
     await new Promise(r => requestAnimationFrame(r));
 
-    if (sentinel.getBoundingClientRect().top > window.innerHeight + 200) {
+    const sentinelTop = sentinel.getBoundingClientRect().top;
+
+    // STOP only when sentinel is clearly below viewport
+    if (sentinelTop > window.innerHeight) {
       break;
     }
 
