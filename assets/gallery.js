@@ -156,7 +156,7 @@ function getArtistSection(artist) {
 
   section.appendChild(header);
   section.appendChild(grid);
-  gallery.appendChild(section);
+  gallery.insertBefore(section, sentinel);
 
   artistSections.set(artist, grid);
   return grid;
