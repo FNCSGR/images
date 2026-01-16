@@ -84,6 +84,8 @@ async function applyFiltersAndReset() {
   artistSections.clear();
 
   await fillViewport();
+
+  observer.observe(sentinel);
 }
 
 async function fillViewport() {
@@ -245,6 +247,7 @@ async function initializeGallery() {
     }
 
     applyFiltersAndReset();
+    observer.observe(sentinel);
 
   } catch (err) {
     console.error("Gallery load error:", err);
