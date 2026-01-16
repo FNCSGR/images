@@ -83,10 +83,7 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  loadNextBatch();
   await fillViewport();
-
-  observer.observe(sentinel);
 }
 
 async function fillViewport() {
@@ -153,15 +150,14 @@ function getArtistSection(artist) {
 /* ---------------- RENDERING ---------------- */
 let batchInProgress = false;
 
-function loadNextBatch() {
-  if (batchInProgress) return Promise.resolve(false);
+async function loadNextBatch() {
+  if (batchInProgress) return false;
   batchInProgress = true;
 
-  const batchSize = BATCH_SIZE;
-  const next = filteredQueue.slice(renderIndex, renderIndex + batchSize);
+  const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
   if (!next.length) {
     batchInProgress = false;
-    return Promise.resolve(false);
+    return false;
   }
 
   const loadPromises = [];
@@ -177,35 +173,30 @@ function loadNextBatch() {
     img.src = src;
     img.alt = alt;
 
-    const p = new Promise(resolve => {
-      img.onload = img.onerror = resolve;
-    });
-
-    loadPromises.push(p);
-
-    img.style.cursor = "pointer";
-    img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
+    loadPromises.push(new Promise(r => {
+      img.onload = img.onerror = r;
+    }));
 
     item.appendChild(img);
     grid.appendChild(item);
   });
 
-  renderIndex += batchSize;
+  renderIndex += BATCH_SIZE;
 
-  return Promise.all(loadPromises).then(() => {
-    batchInProgress = false;
-    return true;
-  });
+  await Promise.all(loadPromises);
+
+  batchInProgress = false;
+  return true;
 }
-
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
 const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-
   await loadNextBatch();
 }, { rootMargin: "300px" });
+
+observer.observe(sentinel);
 
 
 /* ---------------- UI ---------------- */
