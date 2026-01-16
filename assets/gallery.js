@@ -101,7 +101,9 @@ async function fillViewport() {
     renderIndex < filteredQueue.length &&
     safety < 20
   ) {
-    await loadNextBatch();
+    const loaded = await loadNextBatch();
+    if (!loaded) break;
+
     safety++;
     await new Promise(r => requestAnimationFrame(r));
   }
@@ -201,19 +203,9 @@ async function loadNextBatch() {
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-const observer = new IntersectionObserver(async entries => {
+const observer = new IntersectionObserver(entries => {
   if (!entries[0].isIntersecting) return;
-
-  await fillViewport();
-
-  // If sentinel is STILL in view, force another pass
-  requestAnimationFrame(() => {
-    const rect = sentinel.getBoundingClientRect();
-    if (rect.top <= window.innerHeight + 200) {
-      fillViewport();
-    }
-  });
-
+  loadNextBatch();
 }, {
   root: null,
   rootMargin: "300px",
