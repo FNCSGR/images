@@ -87,6 +87,7 @@ async function applyFiltersAndReset() {
 
   await fillViewport();
 
+  observer.unobserve(sentinel);
   observer.observe(sentinel);
 }
 
