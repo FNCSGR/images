@@ -89,24 +89,19 @@ async function applyFiltersAndReset() {
 
   observer.observe(sentinel);
 
-  await loadNextBatch();
+  await fillViewport();
 }
 
 async function fillViewport() {
-  await drainBatches();
-}
-
-async function drainBatches() {
   let safety = 0;
 
   while (
-    sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
+    document.body.scrollHeight <= window.innerHeight &&
     renderIndex < filteredQueue.length &&
-    safety < 5
+    safety < 10
   ) {
     await loadNextBatch();
     safety++;
-    await new Promise(r => requestAnimationFrame(r));
   }
 }
 
