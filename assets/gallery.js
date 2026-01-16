@@ -1,6 +1,8 @@
 const gallery = document.querySelector(".gallery");
 const sentinel = document.createElement("div");
 sentinel.id = "scroll-sentinel";
+sentinel.style.height = "1px";
+sentinel.style.width = "100%";
 gallery.after(sentinel);
 
 const platformIcons = {
