@@ -87,19 +87,22 @@ async function applyFiltersAndReset() {
 }
 
 async function fillViewport() {
+  await drainBatches();
+}
+
+async function drainBatches() {
   let safety = 0;
 
   while (
     sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
-    safety < 10
+    safety < 5
   ) {
     await loadNextBatch();
     safety++;
     await new Promise(r => requestAnimationFrame(r));
   }
 }
-
 
 /* ---------------- ARTIST SECTION MANAGEMENT ---------------- */
 
@@ -193,10 +196,9 @@ async function loadNextBatch() {
 
 const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  await loadNextBatch();
-}, { rootMargin: "300px" });
 
-observer.observe(sentinel);
+  await drainBatches();
+}, { rootMargin: "300px", threshold: 0 });
 
 
 /* ---------------- UI ---------------- */
