@@ -3,7 +3,7 @@ const sentinel = document.createElement("div");
 sentinel.id = "scroll-sentinel";
 sentinel.style.height = "1px";
 sentinel.style.width = "100%";
-gallery.after(sentinel);
+gallery.appendChild(sentinel);
 
 const platformIcons = {
   x: "../assets/x.png",
@@ -85,10 +85,11 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  await fillViewport();
+  gallery.appendChild(sentinel);
 
-  observer.unobserve(sentinel);
   observer.observe(sentinel);
+
+  await loadNextBatch();
 }
 
 async function fillViewport() {
@@ -159,13 +160,15 @@ function getArtistSection(artist) {
 let batchInProgress = false;
 
 async function loadNextBatch() {
-  if (batchInProgress) return false;
+  if (batchInProgress) return;
+
   batchInProgress = true;
 
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
   if (!next.length) {
     batchInProgress = false;
-    return false;
+    observer.unobserve(sentinel);
+    return;
   }
 
   const loadPromises = [];
@@ -175,7 +178,7 @@ async function loadNextBatch() {
 
     const item = document.createElement("div");
     item.className = "gallery-item";
-    item.dataset.tags = tags.map(t => t.includes(" ") ? `"${t}"` : t).join(" ");
+    item.dataset.tags = tags.join(" ");
 
     const img = document.createElement("img");
     img.src = src;
@@ -194,20 +197,22 @@ async function loadNextBatch() {
   await Promise.all(loadPromises);
 
   batchInProgress = false;
-  await new Promise(r => requestAnimationFrame(r));
-  return true;
+
+  // force sentinel to move after content
+  gallery.appendChild(sentinel);
 }
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-const observer = new IntersectionObserver(async entries => {
+const observer = new IntersectionObserver(entries => {
   if (!entries[0].isIntersecting) return;
-  await drainBatches();
+  loadNextBatch();
 }, {
-  root: document.scrollingElement || null,
+  root: null,
   rootMargin: "300px",
   threshold: 0
 });
+
 
 /* ---------------- UI ---------------- */
 
