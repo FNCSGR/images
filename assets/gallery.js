@@ -201,10 +201,12 @@ async function loadNextBatch() {
 
 const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-
   await drainBatches();
-}, { rootMargin: "300px", threshold: 0 });
-
+}, {
+  root: document.scrollingElement || null,
+  rootMargin: "300px",
+  threshold: 0
+});
 
 /* ---------------- UI ---------------- */
 
