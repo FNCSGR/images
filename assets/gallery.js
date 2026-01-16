@@ -28,8 +28,6 @@ const BATCH_SIZE = 5;
 let imageQueue = [];
 let filteredQueue = [];
 let renderIndex = 0;
-let domInsertInProgress = false;   // geometry / observer control
-let batchInProgress = false;       // image loading order
 
 const artistSections = new Map();
 
@@ -85,17 +83,22 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  await loadNextBatch();
   await fillViewport();
+
+  observer.observe(sentinel);
 }
 
 async function fillViewport() {
+  await drainBatches();
+}
+
+async function drainBatches() {
   let safety = 0;
 
   while (
     sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
-    safety < 10
+    safety < 5
   ) {
     await loadNextBatch();
     safety++;
@@ -150,14 +153,17 @@ function getArtistSection(artist) {
 }
 
 /* ---------------- RENDERING ---------------- */
+let batchInProgress = false;
 
-function loadNextBatch() {
-  if (batchInProgress) return Promise.resolve(false);
+async function loadNextBatch() {
+  if (batchInProgress) return false;
+  batchInProgress = true;
 
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
-  if (!next.length) return Promise.resolve(false);
-
-  batchInProgress = true;
+  if (!next.length) {
+    batchInProgress = false;
+    return false;
+  }
 
   const loadPromises = [];
 
@@ -172,15 +178,9 @@ function loadNextBatch() {
     img.src = src;
     img.alt = alt;
 
-    loadPromises.push(
-      new Promise(res => {
-        img.onload = img.onerror = res;
-      })
-    );
-
-    img.addEventListener("click", () =>
-      window.open(src, "_blank", "noopener")
-    );
+    loadPromises.push(new Promise(r => {
+      img.onload = img.onerror = r;
+    }));
 
     item.appendChild(img);
     grid.appendChild(item);
@@ -188,26 +188,20 @@ function loadNextBatch() {
 
   renderIndex += BATCH_SIZE;
 
-  return Promise.all(loadPromises).then(() => {
-    batchInProgress = false;
-    return true;
-  });
+  await Promise.all(loadPromises);
+
+  batchInProgress = false;
+  return true;
 }
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
 const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  if (domInsertInProgress) return;
 
-  domInsertInProgress = true;
+  await drainBatches();
+}, { rootMargin: "300px", threshold: 0 });
 
-  await loadNextBatch();
-
-  requestAnimationFrame(() => {
-    domInsertInProgress = false;
-  });
-}, { rootMargin: "300px" });
 
 /* ---------------- UI ---------------- */
 
@@ -253,6 +247,7 @@ async function initializeGallery() {
     }
 
     applyFiltersAndReset();
+    observer.observe(sentinel);
 
   } catch (err) {
     console.error("Gallery load error:", err);
