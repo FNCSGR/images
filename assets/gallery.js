@@ -28,6 +28,8 @@ const BATCH_SIZE = 5;
 let imageQueue = [];
 let filteredQueue = [];
 let renderIndex = 0;
+let domInsertInProgress = false;   // geometry / observer control
+let batchInProgress = false;       // image loading order
 
 const artistSections = new Map();
 
@@ -83,10 +85,8 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  loadNextBatch();
+  await loadNextBatch();
   await fillViewport();
-
-  observer.observe(sentinel);
 }
 
 async function fillViewport() {
@@ -97,7 +97,7 @@ async function fillViewport() {
     renderIndex < filteredQueue.length &&
     safety < 10
   ) {
-    loadNextBatch();
+    await loadNextBatch();
     safety++;
     await new Promise(r => requestAnimationFrame(r));
   }
@@ -152,8 +152,14 @@ function getArtistSection(artist) {
 /* ---------------- RENDERING ---------------- */
 
 function loadNextBatch() {
+  if (batchInProgress) return Promise.resolve(false);
+
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
-  if (!next.length) return;
+  if (!next.length) return Promise.resolve(false);
+
+  batchInProgress = true;
+
+  const loadPromises = [];
 
   next.forEach(({ src, alt, tags, artist }) => {
     const grid = getArtistSection(artist);
@@ -165,34 +171,41 @@ function loadNextBatch() {
     const img = document.createElement("img");
     img.src = src;
     img.alt = alt;
-    img.style.cursor = "pointer";
-    img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
+
+    loadPromises.push(
+      new Promise(res => {
+        img.onload = img.onerror = res;
+      })
+    );
+
+    img.addEventListener("click", () =>
+      window.open(src, "_blank", "noopener")
+    );
 
     item.appendChild(img);
     grid.appendChild(item);
   });
 
   renderIndex += BATCH_SIZE;
+
+  return Promise.all(loadPromises).then(() => {
+    batchInProgress = false;
+    return true;
+  });
 }
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-let isLoading = false;
-
-const observer = new IntersectionObserver(entries => {
+const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  if (isLoading) return;
+  if (domInsertInProgress) return;
 
-  isLoading = true;
+  domInsertInProgress = true;
 
-  loadNextBatch();
+  await loadNextBatch();
 
   requestAnimationFrame(() => {
-    isLoading = false;
-
-    if (renderIndex < filteredQueue.length) {
-      observer.observe(sentinel);
-    }
+    domInsertInProgress = false;
   });
 }, { rootMargin: "300px" });
 
