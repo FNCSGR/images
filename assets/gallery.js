@@ -87,34 +87,28 @@ async function applyFiltersAndReset() {
 
   gallery.appendChild(sentinel);
 
+  await fillViewport();
+
   observer.unobserve(sentinel);
   observer.observe(sentinel);
-
-  await fillViewport();
 }
 
 async function fillViewport() {
   let safety = 0;
 
-  while (renderIndex < filteredQueue.length && safety < 30) {
-    console.log("sentinelTop:", sentinel.getBoundingClientRect().top, "viewport:", window.innerHeight);
+  while (
+    gallery.scrollHeight < window.innerHeight + 200 &&
+    renderIndex < filteredQueue.length &&
+    safety < 30
+  ) {
     const loaded = await loadNextBatch();
     if (!loaded) break;
 
-    // allow layout to update
     await new Promise(r => requestAnimationFrame(r));
-    await new Promise(r => requestAnimationFrame(r));
-
-    const sentinelTop = sentinel.getBoundingClientRect().top;
-
-    // STOP only when sentinel is clearly below viewport
-    if (sentinelTop > window.innerHeight) {
-      break;
-    }
-
     safety++;
   }
 }
+
 
 /* ---------------- ARTIST SECTION MANAGEMENT ---------------- */
 
