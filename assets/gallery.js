@@ -97,6 +97,7 @@ async function fillViewport() {
   let safety = 0;
 
   while (renderIndex < filteredQueue.length && safety < 30) {
+    console.log("sentinelTop:", sentinel.getBoundingClientRect().top, "viewport:", window.innerHeight);
     const loaded = await loadNextBatch();
     if (!loaded) break;
 
