@@ -93,15 +93,16 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    sentinel.getBoundingClientRect().top < window.innerHeight &&
+    sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
     safety < 10
   ) {
-    loadNextBatch();
+    await loadNextBatch();
     safety++;
     await new Promise(r => requestAnimationFrame(r));
   }
 }
+
 
 /* ---------------- ARTIST SECTION MANAGEMENT ---------------- */
 
@@ -150,10 +151,20 @@ function getArtistSection(artist) {
 }
 
 /* ---------------- RENDERING ---------------- */
+let batchInProgress = false;
 
 function loadNextBatch() {
-  const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
-  if (!next.length) return;
+  if (batchInProgress) return Promise.resolve(false);
+  batchInProgress = true;
+
+  const batchSize = BATCH_SIZE;
+  const next = filteredQueue.slice(renderIndex, renderIndex + batchSize);
+  if (!next.length) {
+    batchInProgress = false;
+    return Promise.resolve(false);
+  }
+
+  const loadPromises = [];
 
   next.forEach(({ src, alt, tags, artist }) => {
     const grid = getArtistSection(artist);
@@ -165,6 +176,13 @@ function loadNextBatch() {
     const img = document.createElement("img");
     img.src = src;
     img.alt = alt;
+
+    const p = new Promise(resolve => {
+      img.onload = img.onerror = resolve;
+    });
+
+    loadPromises.push(p);
+
     img.style.cursor = "pointer";
     img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
 
@@ -172,29 +190,23 @@ function loadNextBatch() {
     grid.appendChild(item);
   });
 
-  renderIndex += BATCH_SIZE;
+  renderIndex += batchSize;
+
+  return Promise.all(loadPromises).then(() => {
+    batchInProgress = false;
+    return true;
+  });
 }
+
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-let isLoading = false;
-
-const observer = new IntersectionObserver(entries => {
+const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  if (isLoading) return;
 
-  isLoading = true;
-
-  loadNextBatch();
-
-  requestAnimationFrame(() => {
-    isLoading = false;
-
-    if (renderIndex < filteredQueue.length) {
-      observer.observe(sentinel);
-    }
-  });
+  await loadNextBatch();
 }, { rootMargin: "300px" });
+
 
 /* ---------------- UI ---------------- */
 
