@@ -83,24 +83,21 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
+  loadNextBatch();
   await fillViewport();
 
   observer.observe(sentinel);
 }
 
 async function fillViewport() {
-  await drainBatches();
-}
-
-async function drainBatches() {
   let safety = 0;
 
   while (
-    sentinel.getBoundingClientRect().top < window.innerHeight + 200 &&
+    sentinel.getBoundingClientRect().top < window.innerHeight &&
     renderIndex < filteredQueue.length &&
-    safety < 5
+    safety < 10
   ) {
-    await loadNextBatch();
+    loadNextBatch();
     safety++;
     await new Promise(r => requestAnimationFrame(r));
   }
@@ -153,19 +150,10 @@ function getArtistSection(artist) {
 }
 
 /* ---------------- RENDERING ---------------- */
-let batchInProgress = false;
 
-async function loadNextBatch() {
-  if (batchInProgress) return false;
-  batchInProgress = true;
-
+function loadNextBatch() {
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
-  if (!next.length) {
-    batchInProgress = false;
-    return false;
-  }
-
-  const loadPromises = [];
+  if (!next.length) return;
 
   next.forEach(({ src, alt, tags, artist }) => {
     const grid = getArtistSection(artist);
@@ -177,31 +165,36 @@ async function loadNextBatch() {
     const img = document.createElement("img");
     img.src = src;
     img.alt = alt;
-
-    loadPromises.push(new Promise(r => {
-      img.onload = img.onerror = r;
-    }));
+    img.style.cursor = "pointer";
+    img.addEventListener("click", () => window.open(src, "_blank", "noopener"));
 
     item.appendChild(img);
     grid.appendChild(item);
   });
 
   renderIndex += BATCH_SIZE;
-
-  await Promise.all(loadPromises);
-
-  batchInProgress = false;
-  return true;
 }
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-const observer = new IntersectionObserver(async entries => {
+let isLoading = false;
+
+const observer = new IntersectionObserver(entries => {
   if (!entries[0].isIntersecting) return;
+  if (isLoading) return;
 
-  await drainBatches();
-}, { rootMargin: "300px", threshold: 0 });
+  isLoading = true;
 
+  loadNextBatch();
+
+  requestAnimationFrame(() => {
+    isLoading = false;
+
+    if (renderIndex < filteredQueue.length) {
+      observer.observe(sentinel);
+    }
+  });
+}, { rootMargin: "300px" });
 
 /* ---------------- UI ---------------- */
 
@@ -247,7 +240,6 @@ async function initializeGallery() {
     }
 
     applyFiltersAndReset();
-    observer.observe(sentinel);
 
   } catch (err) {
     console.error("Gallery load error:", err);
