@@ -1,1 +1,1 @@
-baseurl: "images/dev"  # dev branch version
+baseurl: "/images/dev"  # dev branch version
