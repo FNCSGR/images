@@ -204,6 +204,12 @@ async function loadNextBatch() {
     img.src = src;
     img.alt = alt;
 
+    img.style.cursor = "pointer";
+
+    img.addEventListener("click", () => {
+      window.open(src, "_blank", "noopener");
+    });
+
     loadPromises.push(new Promise(r => {
       img.onload = img.onerror = r;
     }));
