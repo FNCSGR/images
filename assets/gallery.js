@@ -98,15 +98,16 @@ async function fillViewport() {
 }
 
 let scrollLoading = false;
-const maxQueue = Math.max(1, Math.ceil(25 / BATCH_SIZE));
+const maxQueue = Math.max(1, Math.ceil(15 / BATCH_SIZE));
+const queueStep = Math.max(1, Math.ceil(5 / BATCH_SIZE));
 
 window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY || document.documentElement.scrollTop;
   const viewport = window.innerHeight;
   const height = document.documentElement.scrollHeight;
 
-  if (scrollTop + viewport >= height - 300 && loadQueue < maxQueue) {
-    loadQueue++;
+  if (scrollTop + viewport >= height - 300) {
+    loadQueue = Math.min(maxQueue, loadQueue + queueStep);
     drainQueue();
   }
 });
