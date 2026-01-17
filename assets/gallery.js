@@ -1,9 +1,4 @@
 const gallery = document.querySelector(".gallery");
-const sentinel = document.createElement("div");
-sentinel.id = "scroll-sentinel";
-sentinel.style.height = "1px";
-sentinel.style.width = "100%";
-gallery.appendChild(sentinel);
 
 const platformIcons = {
   x: "../assets/x.png",
@@ -158,7 +153,7 @@ function getArtistSection(artist) {
 
   section.appendChild(header);
   section.appendChild(grid);
-  gallery.insertBefore(section, sentinel);
+  gallery.appendChild(section);
 
   artistSections.set(artist, grid);
   return grid;
@@ -168,15 +163,14 @@ function getArtistSection(artist) {
 let batchInProgress = false;
 
 async function loadNextBatch() {
-  if (batchInProgress) return;
-
+  if (batchInProgress) return false;
   batchInProgress = true;
 
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
+
   if (!next.length) {
     batchInProgress = false;
-    observer.unobserve(sentinel);
-    return;
+    return false;
   }
 
   const loadPromises = [];
@@ -205,28 +199,8 @@ async function loadNextBatch() {
   await Promise.all(loadPromises);
 
   batchInProgress = false;
-
-  // force sentinel to move after content
-  gallery.appendChild(sentinel);
+  return true;
 }
-
-/* ---------------- INTERSECTION OBSERVER ---------------- */
-
-const observer = new IntersectionObserver(async entries => {
-  if (!entries[0].isIntersecting) return;
-
-  const loaded = await loadNextBatch();
-  if (!loaded) return;
-
-  // force re-check if still visible
-  await new Promise(r => requestAnimationFrame(r));
-  observer.unobserve(sentinel);
-  observer.observe(sentinel);
-}, {
-  root: null,
-  rootMargin: "300px",
-  threshold: 0
-});
 
 /* ---------------- UI ---------------- */
 
@@ -272,7 +246,6 @@ async function initializeGallery() {
     }
 
     applyFiltersAndReset();
-    observer.observe(sentinel);
 
   } catch (err) {
     console.error("Gallery load error:", err);
