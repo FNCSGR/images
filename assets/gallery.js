@@ -106,7 +106,7 @@ window.addEventListener("scroll", async () => {
   const viewport = window.innerHeight;
   const height = document.documentElement.scrollHeight;
 
-  if (scrollTop + viewport >= height - 2) {
+  if (scrollTop + viewport >= height - 300) {
     scrollLoading = true;
     await loadNextBatch();
     scrollLoading = false;
