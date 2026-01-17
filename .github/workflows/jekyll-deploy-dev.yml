@@ -25,7 +25,7 @@ jobs:
         run: bundle install
 
       - name: Build Jekyll site
-        run: bundle exec jekyll build
+        run: bundle exec jekyll build --config _config.yml,_config_dev.yml
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
