@@ -85,30 +85,38 @@ async function applyFiltersAndReset() {
   gallery.innerHTML = "";
   artistSections.clear();
 
-  gallery.appendChild(sentinel);
-
   await fillViewport();
-
-  observer.unobserve(sentinel);
-  observer.observe(sentinel);
 }
 
 async function fillViewport() {
   let safety = 0;
 
   while (
-    document.documentElement.scrollHeight < window.innerHeight + 200 &&
+    document.documentElement.scrollHeight < window.innerHeight + 300 &&
     renderIndex < filteredQueue.length &&
     safety < 30
   ) {
     const loaded = await loadNextBatch();
     if (!loaded) break;
-
-    await new Promise(r => requestAnimationFrame(r));
     safety++;
   }
 }
 
+let scrollLoading = false;
+
+window.addEventListener("scroll", async () => {
+  if (scrollLoading) return;
+
+  const bottomGap =
+    document.documentElement.scrollHeight -
+    (window.scrollY + window.innerHeight);
+
+  if (bottomGap < 300) {
+    scrollLoading = true;
+    await loadNextBatch();
+    scrollLoading = false;
+  }
+});
 
 /* ---------------- ARTIST SECTION MANAGEMENT ---------------- */
 
