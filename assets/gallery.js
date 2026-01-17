@@ -99,17 +99,14 @@ async function fillViewport() {
 
 let scrollLoading = false;
 
-window.addEventListener("scroll", async () => {
-  if (scrollLoading) return;
-
+window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY || document.documentElement.scrollTop;
   const viewport = window.innerHeight;
   const height = document.documentElement.scrollHeight;
 
   if (scrollTop + viewport >= height - 300) {
-    scrollLoading = true;
-    await loadNextBatch();
-    scrollLoading = false;
+    loadQueue++;
+    drainQueue();
   }
 });
 
@@ -160,7 +157,34 @@ function getArtistSection(artist) {
 }
 
 /* ---------------- RENDERING ---------------- */
+let loadQueue = 0;
 let batchInProgress = false;
+
+async function drainQueue() {
+  if (batchInProgress) return;
+  if (loadQueue <= 0) return;
+
+  batchInProgress = true;
+  loadQueue--;
+
+  const loaded = await loadNextBatch();
+
+  batchInProgress = false;
+
+  if (loaded) {
+    // allow layout to settle
+    await new Promise(r => requestAnimationFrame(r));
+  }
+
+  // If user is still near bottom OR queue still exists → continue
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const viewport = window.innerHeight;
+  const height = document.documentElement.scrollHeight;
+
+  if (loadQueue > 0 || scrollTop + viewport >= height - 300) {
+    drainQueue();
+  }
+}
 
 async function loadNextBatch() {
   if (batchInProgress) return false;
