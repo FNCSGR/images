@@ -97,7 +97,7 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    gallery.scrollHeight < window.innerHeight + 200 &&
+    document.documentElement.scrollHeight < window.innerHeight + 200 &&
     renderIndex < filteredQueue.length &&
     safety < 30
   ) {
@@ -204,9 +204,16 @@ async function loadNextBatch() {
 
 /* ---------------- INTERSECTION OBSERVER ---------------- */
 
-const observer = new IntersectionObserver(entries => {
+const observer = new IntersectionObserver(async entries => {
   if (!entries[0].isIntersecting) return;
-  loadNextBatch();
+
+  const loaded = await loadNextBatch();
+  if (!loaded) return;
+
+  // force re-check if still visible
+  await new Promise(r => requestAnimationFrame(r));
+  observer.unobserve(sentinel);
+  observer.observe(sentinel);
 }, {
   root: null,
   rootMargin: "300px",
