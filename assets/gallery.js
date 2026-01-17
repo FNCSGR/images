@@ -102,11 +102,11 @@ let scrollLoading = false;
 window.addEventListener("scroll", async () => {
   if (scrollLoading) return;
 
-  const bottomGap =
-    document.documentElement.scrollHeight -
-    (window.scrollY + window.innerHeight);
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const viewport = window.innerHeight;
+  const height = document.documentElement.scrollHeight;
 
-  if (bottomGap < 300) {
+  if (scrollTop + viewport >= height - 2) {
     scrollLoading = true;
     await loadNextBatch();
     scrollLoading = false;
