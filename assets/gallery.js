@@ -91,8 +91,8 @@ async function fillViewport() {
     renderIndex < filteredQueue.length &&
     safety < 30
   ) {
-    const loaded = await loadNextBatch();
-    if (!loaded) break;
+    loadQueue++;
+    await drainQueue();
     safety++;
   }
 }
@@ -172,11 +172,9 @@ async function drainQueue() {
   batchInProgress = false;
 
   if (loaded) {
-    // allow layout to settle
     await new Promise(r => requestAnimationFrame(r));
   }
 
-  // If user is still near bottom OR queue still exists → continue
   const scrollTop = window.scrollY || document.documentElement.scrollTop;
   const viewport = window.innerHeight;
   const height = document.documentElement.scrollHeight;
@@ -187,15 +185,9 @@ async function drainQueue() {
 }
 
 async function loadNextBatch() {
-  if (batchInProgress) return false;
-  batchInProgress = true;
-
   const next = filteredQueue.slice(renderIndex, renderIndex + BATCH_SIZE);
 
-  if (!next.length) {
-    batchInProgress = false;
-    return false;
-  }
+  if (!next.length) return false;
 
   const loadPromises = [];
 
@@ -221,8 +213,6 @@ async function loadNextBatch() {
   renderIndex += BATCH_SIZE;
 
   await Promise.all(loadPromises);
-
-  batchInProgress = false;
   return true;
 }
 
