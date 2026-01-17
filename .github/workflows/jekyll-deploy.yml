@@ -16,29 +16,40 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
 
-      - name: Install Ruby gems
-        run: bundle install
+      - name: Build main
+        working-directory: main
+        run: |
+          bundle install
+          bundle exec jekyll build
 
-      - name: Build Jekyll site
-        run: bundle exec jekyll build
+      - name: Checkout dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: dev
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Build dev
+        working-directory: dev
+        run: |
+          bundle install
+          bundle exec jekyll build
 
       - name: Prepare Pages artifact
         shell: powershell
         run: |
-          New-Item -ItemType Directory -Force -Path output | Out-Null
+          New-Item output -ItemType Directory -Force | Out-Null
+          Copy-Item main\_site\* output\ -Recurse -Force
+          New-Item output\dev -ItemType Directory -Force | Out-Null
+          Copy-Item dev\_site\* output\dev\ -Recurse -Force
 
-          if ($env:GITHUB_REF_NAME -eq "main") {
-            Copy-Item _site\* output\ -Recurse -Force
-          } else {
-            New-Item -ItemType Directory -Force -Path output\dev | Out-Null
-            Copy-Item _site\* output\dev\ -Recurse -Force
-          }
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
