@@ -29,15 +29,16 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Prepare Pages artifact
+        shell: pwsh
         run: |
-          mkdir output
+          New-Item -ItemType Directory -Force -Path output | Out-Null
 
-          if [ "${GITHUB_REF_NAME}" = "main" ]; then
-            cp -r _site/* output/
-          else
-            mkdir output/dev
-            cp -r _site/* output/dev/
-          fi
+          if ($env:GITHUB_REF_NAME -eq "main") {
+            Copy-Item _site\* output\ -Recurse -Force
+          } else {
+            New-Item -ItemType Directory -Force -Path output\dev | Out-Null
+            Copy-Item _site\* output\dev\ -Recurse -Force
+          }
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
