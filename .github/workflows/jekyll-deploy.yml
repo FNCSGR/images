@@ -1,9 +1,7 @@
-name: Update dev
+name: Update pages
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ dev ]
 
 permissions:
   contents: read
@@ -11,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-dev"
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
@@ -25,24 +23,34 @@ jobs:
         run: bundle install
 
       - name: Build Jekyll site
-        run: bundle exec jekyll build
+        run: bundle exec jekyll build --config _config.yml,_config_dev.yml
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Move site into dev folder
+      - name: Prepare Pages artifact
         run: |
-          mkdir dev
-          cp -r _site/* dev/
+          mkdir output
+
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            cp -r _site/* output/
+          else
+            mkdir output/dev
+            cp -r _site/* output/dev/
+          fi
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dev
+          path: output
 
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: self-hosted
     needs: build
     steps:
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

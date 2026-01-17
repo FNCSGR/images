@@ -1,4 +1,4 @@
-name: Update main
+name: Update pages (OLD)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-main"
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
