@@ -1,4 +1,4 @@
-name: Update pages (SH)
+name: Update main
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-main"
   cancel-in-progress: false
 
 jobs:
