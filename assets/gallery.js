@@ -87,7 +87,7 @@ async function fillViewport() {
   let safety = 0;
 
   while (
-    document.documentElement.scrollHeight < window.innerHeight + 300 &&
+    gallery.scrollHeight < window.innerHeight + 300 &&
     renderIndex < filteredQueue.length &&
     safety < 30
   ) {
