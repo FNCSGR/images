@@ -211,7 +211,10 @@ async function loadNextBatch() {
     });
 
     loadPromises.push(new Promise(r => {
-      img.onload = img.onerror = r;
+      img.onload = img.onerror = () => {
+        item.classList.add("loaded");
+        r();
+      };
     }));
 
     item.appendChild(img);

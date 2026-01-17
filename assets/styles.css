@@ -113,15 +113,48 @@ header {
   background: #1e1e1e;
   border-radius: 10px;
   overflow: hidden;
+  position: relative;
 }
 
+/* skeleton shimmer */
+.gallery-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    #1e1e1e 40%,
+    #2a2a2a 50%,
+    #1e1e1e 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+/* when loaded */
+.gallery-item.loaded img {
+  opacity: 1;
+}
+
+.gallery-item.loaded::before {
+  display: none;
+}
+
+/* image hidden initially */
 .gallery-item img {
   width: 100%;
   height: 280px;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  position: relative;
+  z-index: 1;
 }
-
 
 .artist-section {
   width: 100%;
