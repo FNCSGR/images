@@ -29,7 +29,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Prepare Pages artifact
-        shell: pwsh
+        shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path output | Out-Null
 
