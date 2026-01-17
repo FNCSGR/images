@@ -98,7 +98,7 @@ async function fillViewport() {
 }
 
 let scrollLoading = false;
-const maxQueue = Math.max(1, Math.ceil(15 / BATCH_SIZE));
+const maxQueue = Math.max(1, Math.ceil(25 / BATCH_SIZE));
 
 window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY || document.documentElement.scrollTop;
