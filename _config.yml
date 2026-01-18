@@ -3,7 +3,7 @@ description: A filterable image gallery with subpages
 theme: null  # Disable default Jekyll theme
 
 # Needed for GitHub Pages
-baseurl: "images"  # change this to your repo name if you're using GitHub Pages without a custom domain
+baseurl: "Gallery"  # change this to your repo name if you're using GitHub Pages without a custom domain
 url: "https://fncsgr.github.io"      # leave blank for self-hosting or local builds
 
 # Optional defaults
