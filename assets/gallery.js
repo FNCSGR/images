@@ -28,6 +28,51 @@ let renderIndex = 0;
 
 const artistSections = new Map();
 
+/* ---------------- Slideshow ---------------- */
+
+const slideshow = document.getElementById("slideshow");
+const slideImg = document.getElementById("slide-img");
+const slidePrev = document.getElementById("slide-prev");
+const slideNext = document.getElementById("slide-next");
+const slideClose = document.getElementById("slide-close");
+
+let slideshowList = [];
+let slideshowIndex = 0;
+
+function openSlideshow(list, index) {
+  slideshowList = list;
+  slideshowIndex = index;
+  slideImg.src = list[index].src;
+  slideshow.classList.remove("hidden");
+  document.body.classList.add("slideshow-open");;
+}
+
+function closeSlideshow() {
+  slideshow.classList.add("hidden");
+  document.body.classList.remove("slideshow-open");
+}
+
+function showNext() {
+  slideshowIndex = (slideshowIndex + 1) % slideshowList.length;
+  slideImg.src = slideshowList[slideshowIndex].src;
+}
+
+function showPrev() {
+  slideshowIndex = (slideshowIndex - 1 + slideshowList.length) % slideshowList.length;
+  slideImg.src = slideshowList[slideshowIndex].src;
+}
+
+slideNext.onclick = showNext;
+slidePrev.onclick = showPrev;
+slideClose.onclick = closeSlideshow;
+
+document.addEventListener("keydown", e => {
+  if (slideshow.classList.contains("hidden")) return;
+  if (e.key === "Escape") closeSlideshow();
+  if (e.key === "ArrowRight" || e.key === "D" || e.key === "d") showNext();
+  if (e.key === "ArrowLeft" || e.key === "A" || e.key === "a") showPrev();
+});
+
 /* ---------------- TAG HELPERS ---------------- */
 
 function createCheckbox(container, value, category) {
@@ -207,7 +252,9 @@ async function loadNextBatch() {
     img.style.cursor = "pointer";
 
     img.addEventListener("click", () => {
-      window.open(src, "_blank", "noopener");
+      openSlideshow(filteredQueue, filteredQueue.indexOf(
+        filteredQueue.find(i => i.src === src)
+      ));
     });
 
     loadPromises.push(new Promise(r => {
