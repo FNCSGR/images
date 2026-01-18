@@ -2,3 +2,5 @@ API_Token.py
 __pycache__/
 *.pyc
 Gemfile.lock
+_site
+preview-dev.ps1
