@@ -16,37 +16,14 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: main
-          path: main
 
-      - name: Build main
-        working-directory: main
-        run: |
-          bundle install
-          bundle exec jekyll build --config _config.yml
+      - name: Install Ruby gems
+        run: bundle install
 
-      - name: Checkout dev
-        uses: actions/checkout@v4
-        with:
-          ref: dev
-          path: dev
-
-      - name: Build dev
-        working-directory: dev
-        run: |
-          bundle install
-          bundle exec jekyll build --config _config.yml,_config_dev.yml
-
-      - name: Prepare Pages artifact
-        shell: powershell
-        run: |
-          New-Item output -ItemType Directory -Force | Out-Null
-          Copy-Item main\_site\* output\ -Recurse -Force
-          New-Item output\dev -ItemType Directory -Force | Out-Null
-          Copy-Item dev\_site\* output\dev\ -Recurse -Force
+      - name: Build Jekyll site
+        run: bundle exec jekyll build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -54,7 +31,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: output
+          path: _site
 
   deploy:
     environment:
