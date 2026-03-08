@@ -18,6 +18,12 @@ const selectedTags = {
   activity: new Set(),
 };
 
+let galleryMode = "images"; 
+const MANIFESTS = {
+  images: "image_manifest.json",
+  animations: "animation_manifest.json"
+};
+
 let filterMode = "any";
 
 const BATCH_SIZE = 1;
@@ -27,6 +33,64 @@ let filteredQueue = [];
 let renderIndex = 0;
 
 const artistSections = new Map();
+
+/* ---------------- Mode ---------------- */
+
+function createModeButtons() {
+  const container = document.createElement("div");
+  container.id = "mode-switch";
+
+  const imagesBtn = document.createElement("button");
+  imagesBtn.textContent = "Images";
+  imagesBtn.dataset.mode = "images";
+  imagesBtn.disabled = true;
+
+  const animationsBtn = document.createElement("button");
+  animationsBtn.textContent = "Animations";
+  animationsBtn.dataset.mode = "animations";
+
+  container.appendChild(imagesBtn);
+  container.appendChild(animationsBtn);
+
+  gallery.parentNode.insertBefore(container, gallery);
+
+  container.addEventListener("click", e => {
+    if (e.target.tagName !== "BUTTON") return;
+    switchMode(e.target.dataset.mode);
+  });
+}
+
+function resetGalleryState() {
+  imageQueue = [];
+  filteredQueue = [];
+  renderIndex = 0;
+  loadQueue = 0;
+  batchInProgress = false;
+
+  artistSections.clear();
+  gallery.innerHTML = "";
+
+  resetSelectedTags();
+}
+
+async function switchMode(mode) {
+  if (mode === galleryMode) return;
+
+  galleryMode = mode;
+
+  document.querySelectorAll("#mode-switch button").forEach(btn => {
+    btn.disabled = btn.dataset.mode === mode;
+  });
+
+  resetGalleryState();
+  await initializeGallery();
+}
+
+function resetSelectedTags() {
+  for (const set of Object.values(selectedTags)) {
+    set.clear();
+  }
+}
 
 /* ---------------- Slideshow ---------------- */
 
@@ -293,7 +357,9 @@ document.getElementById("toggle-filters").addEventListener("click", () => {
 
 async function initializeGallery() {
   try {
-    const manifest = await fetch("manifest.json").then(r => r.json());
+    const manifestPath = MANIFESTS[galleryMode];
+    const manifest = await fetch(manifestPath).then(r => r.json());
+
     artistRegistry = await fetch("../artists.json").then(r => r.json());
 
     jsonFiles = manifest.map(e => e.file);
@@ -304,13 +370,24 @@ async function initializeGallery() {
 
     const responses = await Promise.all(
       jsonFiles.map((file, i) =>
-        fetch(file).then(r => r.json()).then(images =>
-          images.map(img => ({ ...img, artist: jsonNames[i] }))
-        )
+        fetch(file)
+          .then(r => r.json())
+          .then(items =>
+            items.map(item => ({
+              ...item,
+              artist: jsonNames[i]
+            }))
+          )
       )
     );
 
     imageQueue = responses.flat();
+
+    // Clear old filters
+    for (const category of Object.keys(tagCategories)) {
+      const container = document.getElementById(`${category}-filter`);
+      if (container) container.innerHTML = "";
+    }
 
     for (const [category, values] of Object.entries(tagCategories)) {
       const container = document.getElementById(`${category}-filter`);
@@ -324,4 +401,5 @@ async function initializeGallery() {
   }
 }
 
+createModeButtons();
 initializeGallery();
