@@ -20,6 +20,8 @@ include:
   - Vivienne
   - "**/tags.js"
 
+exclude:
+  - Organiser.html
 
 # Enable required plugins (optional, depends on setup)
 plugins:

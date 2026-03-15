@@ -1,3 +1,6 @@
 [
-    { "name": "Meis", "file": "Defines/Animations/Meis.json" }
+  {
+    "name": "Meis",
+    "file": "Defines/Animations/Meis.json"
+  }
 ]

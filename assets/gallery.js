@@ -18,7 +18,7 @@ const selectedTags = {
   activity: new Set(),
 };
 
-let galleryMode = "images"; 
+let galleryMode = "images";
 const MANIFESTS = {
   images: "image_manifest.json",
   animations: "animation_manifest.json"
@@ -36,27 +36,44 @@ const artistSections = new Map();
 
 /* ---------------- Mode ---------------- */
 
-function createModeButtons() {
+async function createModeButtons() {
   const container = document.createElement("div");
   container.id = "mode-switch";
 
-  const imagesBtn = document.createElement("button");
-  imagesBtn.textContent = "Images";
-  imagesBtn.dataset.mode = "images";
-  imagesBtn.disabled = true;
+  let animationsAvailable = false;
 
-  const animationsBtn = document.createElement("button");
-  animationsBtn.textContent = "Animations";
-  animationsBtn.dataset.mode = "animations";
+  try {
+    const res = await fetch(MANIFESTS.animations, {
+      method: "HEAD",
+      cache: "no-store"
+    });
 
-  container.appendChild(imagesBtn);
-  container.appendChild(animationsBtn);
+    animationsAvailable = res.ok;
+  } catch (e) {
+    // Ignore completely — missing file is expected for some galleries
+  }
+
+  if (animationsAvailable) {
+    const imagesBtn = document.createElement("button");
+    imagesBtn.textContent = "Images";
+    imagesBtn.dataset.mode = "images";
+    container.appendChild(imagesBtn);
+
+    const animationsBtn = document.createElement("button");
+    animationsBtn.textContent = "Animations";
+    animationsBtn.dataset.mode = "animations";
+    container.appendChild(animationsBtn);
+  }
 
   gallery.parentNode.insertBefore(container, gallery);
 
   container.addEventListener("click", e => {
     if (e.target.tagName !== "BUTTON") return;
     switchMode(e.target.dataset.mode);
+  });
+
+  document.querySelectorAll("#mode-switch button").forEach(btn => {
+  btn.disabled = btn.dataset.mode === galleryMode;
   });
 }
 
@@ -401,5 +418,7 @@ async function initializeGallery() {
   }
 }
 
-createModeButtons();
-initializeGallery();
+(async () => {
+  await createModeButtons();
+  initializeGallery();
+})();

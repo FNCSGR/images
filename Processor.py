@@ -9,7 +9,7 @@ import shutil
 from collections import defaultdict
 from customtkinter import *
 from tkinter import messagebox
-from LocalVariables import Token, upload_root, archive_root
+from LocalVariables import Token, upload_root, archive_root # Stored in a seperate file to ensure these variables aren't published, keep this file in the .gitignore
 
 # =========================================================
 # API
@@ -21,8 +21,7 @@ def create_imgchest_post(title, images_with_meta, token):
     to the creation request. Descriptions are NOT supported during
     creation and must be applied later via PATCH.
 
-    images_with_meta: [{"path": filepath}]
-    Only the first ≤20 images should be provided here.
+    Only the first ≤20 images should be uploaded here as that's the cap imposed by ImgChest.
     """
 
     url = "https://api.imgchest.com/v1/post"
@@ -791,15 +790,15 @@ def prompt_group_tagging(root, group_name, image_paths, characters):
 # =========================================================
 
 def main_processing_with_upload(selections, log, update_rate_limit, start_countdown, root):
-    post_lookup, all_posts = build_post_lookup()
+    post_lookup, all_posts = build_post_lookup() # Step 1A: Gather the list of existing posts that can be uploaded to.
 
     # -------------------------------------------------
     # PREFLIGHT: detect missing posts
     # -------------------------------------------------
 
-    missing_map = plan_missing_posts(upload_root, selections, post_lookup, log)
+    missing_map = plan_missing_posts(upload_root, selections, post_lookup, log) # Step 1B: Check to see if there are files for which no suitable post exists.
 
-    if missing_map:
+    if missing_map: # Step 1C: If there are missing posts ensure these posts are created and added to the post file for later use. Reload this file after so remaining images can be uploaded to new posts.
         log(f"Detected {len(missing_map)} missing post targets")
         touched_posts = create_missing_posts(missing_map, "posts.json", all_posts, log, root)
 
@@ -813,7 +812,7 @@ def main_processing_with_upload(selections, log, update_rate_limit, start_countd
     # BUILD UPLOAD MAP
     # -------------------------------------------------
 
-    upload_map = collect_images_from_folder(
+    upload_map = collect_images_from_folder( # Step 2A: Prepare the images that need to be uploaded.
         upload_root,
         post_lookup,
         selections,
@@ -821,7 +820,7 @@ def main_processing_with_upload(selections, log, update_rate_limit, start_countd
         root
     )
 
-    if not upload_map:
+    if not upload_map: # Step 2B: Should there be no images to upload then proceed to GET.
         log("No new images to upload detected, skipping upload step")
 
     # Determine which posts correspond to the current selection
@@ -909,25 +908,27 @@ def main_processing(posts, log, update_rate_limit, start_countdown):
 # GUI
 # =========================================================
 
-def main_GUI():
+def main_GUI(): # Create the GUI
     set_appearance_mode("dark")
     root = CTk()
     root.geometry("900x600")
     root.title("ImgChest Upload Manager")
-    root.after(0, lambda: root.state('zoomed'))
-    image_counts = build_image_counts(upload_root)
+    root.after(0, lambda: root.state('zoomed')) # Ensure it starts maximized
+    image_counts = build_image_counts(upload_root) # Inform the user through the GUI how many images they'll be uploading when selecting, also sort descendingly.
 
     # ---------- FILTER STATE ----------
     char_filter = StringVar(value="All")
     artist_filter = StringVar(value="")
 
-    def shutdown():
+    def shutdown(): # Ensure the application closes fully if exited out off, rather than trying to process incomplete data.
         root.destroy
         exit()
     
     root.protocol("WM_DELETE_WINDOW", shutdown)
 
     # ---------- LOG ----------
+
+    # The log box allows for users to be informed about the progress and potential issues right within the GUI, rather than still needing an open console.
     log_box = CTkTextbox(root, height=120, state="disabled")
     log_box.pack(fill="x", padx=8, pady=(4, 2))
 

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery Editor</title>
+
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: sans-serif;
+      padding: 1rem;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    select,
+    button {
+      background: #1e1e1e;
+      color: white;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-right: 1rem;
+    }
+
+    button {
+      background: #6200ee;
+      cursor: pointer;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .item {
+      background: #1e1e1e;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .item.selected {
+      outline: 3px solid #6200ee;
+    }
+
+    .item.dragging {
+      opacity: 0.5;
+    }
+
+    .item img {
+      width: 100%;
+      border-radius: 4px;
+    }
+
+    .handle {
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.6;
+      margin-bottom: 4px;
+      cursor: grab;
+    }
+
+    #tagPanel {
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 8px;
+
+      position: sticky;
+      top: 1rem;
+
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+    }
+
+
+    .tagCategory {
+      margin-bottom: 1rem;
+    }
+
+    .tagCategory h3 {
+      margin: 0 0 0.4rem 0;
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+
+    .tagItem {
+      display: block;
+      font-size: 0.9rem;
+      margin: 3px 0;
+    }
+
+    .tagBadges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .tagBadge {
+      background: #333;
+      padding: 2px 6px;
+      font-size: 1rem;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Gallery Editor</h1>
+
+  <div class="controls">
+
+    <label>Topic:</label>
+    <select id="topicSelector">
+      <option value="">-- Select Topic --</option>
+    </select>
+
+    <label>Mode:</label>
+    <select id="modeSelector" disabled>
+      <option value="image">Images</option>
+      <option value="animation">Animations</option>
+    </select>
+
+    <select id="jsonSelector" disabled>
+      <option value="">-- Select JSON Gallery --</option>
+    </select>
+
+    <button id="saveBtn" disabled>Save</button>
+
+  </div>
+
+  <div class="workspace">
+
+    <div id="tagPanel"></div>
+
+    <div class="gallery" id="editor"></div>
+
+  </div>
+
+  <script>
+
+    let fileHandle = null
+    let currentGalleryData = []
+    let currentFileName = ""
+    let currentTopic = ""
+    let relativePath = ""
+    let currentMode = "image"
+
+    let tagData = {
+      sensitiveTags: [],
+      categories: {},
+      flatList: []
+    }
+
+    let selectedImages = new Set()
+
+    const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+    const editor = document.getElementById("editor")
+    const topicSelector = document.getElementById("topicSelector")
+    const modeSelector = document.getElementById("modeSelector")
+    const jsonSelector = document.getElementById("jsonSelector")
+    const tagPanel = document.getElementById("tagPanel")
+
+    function populateTopicSelector() {
+
+      fetch("./Characters.json")
+        .then(r => r.json())
+        .then(topics => {
+
+          topics.forEach(topic => {
+
+            const option = document.createElement("option")
+            option.value = topic.folder
+            option.textContent = topic.name
+            topicSelector.appendChild(option)
+
+          })
+
+        })
+
+    }
+
+    populateTopicSelector()
+
+    function renderTagPanel() {
+
+      tagPanel.innerHTML = ""
+
+      if (tagData.sensitiveTags.length) {
+
+        const block = document.createElement("div")
+        block.className = "tagCategory"
+
+        const title = document.createElement("h3")
+        title.textContent = "Sensitive"
+
+        block.appendChild(title)
+
+        tagData.sensitiveTags.forEach(tag => {
+          block.appendChild(createTagCheckbox(tag))
+        })
+
+        tagPanel.appendChild(block)
+
+      }
+
+      Object.entries(tagData.categories).forEach(([category, tags]) => {
+
+        const block = document.createElement("div")
+        block.className = "tagCategory"
+
+        const title = document.createElement("h3")
+        title.textContent = capitalize(category)
+
+        block.appendChild(title)
+
+        tags.forEach(tag => {
+          block.appendChild(createTagCheckbox(tag))
+        })
+
+        tagPanel.appendChild(block)
+
+      })
+
+    }
+
+    function createTagCheckbox(tag) {
+
+      const label = document.createElement("label")
+      label.className = "tagItem"
+
+      const checkbox = document.createElement("input")
+      checkbox.type = "checkbox"
+      checkbox.dataset.tag = tag
+
+      checkbox.addEventListener("change", () => {
+
+        selectedImages.forEach(index => {
+
+          const img = currentGalleryData[index]
+
+          if (!img.tags) img.tags = []
+
+          if (checkbox.checked) {
+
+            if (!img.tags.includes(tag))
+              img.tags.push(tag)
+
+          } else {
+
+            img.tags = img.tags.filter(t => t !== tag)
+
+          }
+
+          renderTagBadges(index)
+
+        })
+
+        updateTagPanelStates()
+
+      })
+
+      label.appendChild(checkbox)
+      label.append(" " + tag)
+
+      return label
+
+    }
+
+    function updateTagPanelStates() {
+
+      const checkboxes = tagPanel.querySelectorAll("input[type=checkbox]")
+
+      checkboxes.forEach(box => {
+
+        const tag = box.dataset.tag
+        let count = 0
+
+        selectedImages.forEach(index => {
+          const img = currentGalleryData[index]
+          if (img.tags && img.tags.includes(tag)) count++
+        })
+
+        if (selectedImages.size === 0) {
+
+          box.checked = false
+          box.indeterminate = false
+          return
+
+        }
+
+        if (count === 0) {
+
+          box.checked = false
+          box.indeterminate = false
+
+        } else if (count === selectedImages.size) {
+
+          box.checked = true
+          box.indeterminate = false
+
+        } else {
+
+          box.checked = false
+          box.indeterminate = true
+
+        }
+
+      })
+
+    }
+
+    topicSelector.addEventListener("change", async function () {
+
+      const topic = this.value
+
+      if (!topic) {
+
+        jsonSelector.disabled = true
+        modeSelector.disabled = true
+        return
+
+      }
+
+      currentTopic = topic
+
+      await loadTags()
+      renderTagPanel()
+
+      const imageManifest = `${topic}/image_manifest.json`
+      const animationManifest = `${topic}/animation_manifest.json`
+
+      const animationExists = await fetch(animationManifest, { method: "HEAD" })
+        .then(r => r.ok)
+        .catch(() => false)
+
+      modeSelector.disabled = false
+      modeSelector.value = "image"
+      currentMode = "image"
+
+      modeSelector.querySelector('[value="animation"]').disabled = !animationExists
+
+      loadManifest()
+
+    })
+
+    modeSelector.addEventListener("change", function () {
+
+      currentMode = this.value
+      loadManifest()
+
+    })
+
+    jsonSelector.addEventListener("change", function () {
+
+      const file = this.value
+      if (!file) return
+
+      currentFileName = file.split("/").pop()
+      relativePath = `${currentTopic}/${file}`
+
+      fetch(relativePath)
+        .then(r => r.json())
+        .then(data => {
+
+          currentGalleryData = data
+          selectedImages.clear()
+
+          renderGallery()
+
+          document.getElementById("saveBtn").disabled = false
+
+        })
+
+    })
+
+    function renderTagBadges(index) {
+
+      const container = document.querySelector(`.item[data-index="${index}"] .tagBadges`)
+      if (!container) return
+
+      container.innerHTML = ""
+
+      const tags = currentGalleryData[index].tags || []
+
+      tags.forEach(tag => {
+        const badge = document.createElement("span")
+        badge.className = "tagBadge"
+        badge.textContent = tag
+        container.appendChild(badge)
+      })
+
+    }
+
+
+    function loadManifest() {
+
+      jsonSelector.disabled = true
+      jsonSelector.innerHTML = `<option>Loading...</option>`
+
+      const manifestPath = currentMode === "animation"
+        ? `${currentTopic}/animation_manifest.json`
+        : `${currentTopic}/image_manifest.json`
+
+      fetch(manifestPath)
+        .then(res => res.json())
+        .then(manifest => {
+
+          jsonSelector.innerHTML = `<option value="">-- Select JSON Gallery --</option>`
+
+          manifest.forEach(entry => {
+
+            const option = document.createElement("option")
+            option.value = entry.file
+            option.textContent = entry.name
+            jsonSelector.appendChild(option)
+
+          })
+
+          jsonSelector.disabled = false
+
+        })
+
+    }
+
+    async function loadTags() {
+
+      const path = `${currentTopic}/tags.js`
+
+      try {
+
+        const text = await fetch(path).then(r => r.text())
+
+        const extracted = new Function(`
+${text}
+return {
+sensitiveTags: typeof sensitiveTags !== "undefined" ? sensitiveTags : [],
+extraTagCategories: typeof extraTagCategories !== "undefined" ? extraTagCategories : {}
+}
+`)()
+
+        const sensitive = (extracted.sensitiveTags || []).filter(t => t && t.trim())
+
+        const categories = {}
+
+        Object.entries(extracted.extraTagCategories || {}).forEach(([key, arr]) => {
+          categories[key] = (arr || []).filter(t => t && t.trim())
+        })
+
+        const flat = [
+          ...sensitive,
+          ...Object.values(categories).flat()
+        ]
+
+        tagData = {
+          sensitiveTags: sensitive,
+          categories: categories,
+          flatList: flat
+        }
+
+        console.log("Loaded tags:", tagData)
+
+      } catch (err) {
+
+        console.warn("Failed to load tags.js", err)
+
+        tagData = {
+          sensitiveTags: [],
+          categories: {},
+          flatList: []
+        }
+
+      }
+
+    }
+
+    function renderGallery() {
+
+      editor.innerHTML = ""
+
+      currentGalleryData.forEach((img, index) => {
+
+        const div = document.createElement("div")
+        div.className = "item"
+        div.draggable = true
+        div.dataset.index = index
+
+        div.addEventListener("click", (e) => {
+
+          if (e.ctrlKey || e.metaKey) {
+
+            if (selectedImages.has(index)) {
+              selectedImages.delete(index)
+              div.classList.remove("selected")
+            } else {
+              selectedImages.add(index)
+              div.classList.add("selected")
+            }
+
+          } else {
+
+            selectedImages.clear()
+            document.querySelectorAll(".item").forEach(i => i.classList.remove("selected"))
+
+            selectedImages.add(index)
+            div.classList.add("selected")
+
+          }
+
+          updateTagPanelStates()
+
+        })
+
+        const handle = document.createElement("div")
+        handle.className = "handle"
+        handle.textContent = "drag to reorder"
+
+        const image = document.createElement("img")
+        image.src = img.src
+
+        const badgeContainer = document.createElement("div")
+        badgeContainer.className = "tagBadges"
+
+        div.appendChild(handle)
+        div.appendChild(image)
+        div.appendChild(badgeContainer)
+
+        editor.appendChild(div)
+
+        renderTagBadges(index)
+
+      })
+
+      enableDrag()
+
+    }
+
+    function enableDrag() {
+
+      let draggedItem = null
+
+      editor.querySelectorAll(".item").forEach(item => {
+
+        item.addEventListener("dragstart", (e) => {
+
+          draggedItem = item
+          item.classList.add("dragging")
+
+        })
+
+        item.addEventListener("dragend", () => {
+
+          editor.querySelectorAll(".item").forEach(i => i.classList.remove("dragging"))
+
+        })
+
+        item.addEventListener("dragover", (e) => {
+          e.preventDefault()
+        })
+
+        item.addEventListener("drop", (e) => {
+
+          e.preventDefault()
+
+          if (!draggedItem) return
+
+          const allItems = [...editor.children]
+
+          const draggedIndex = allItems.indexOf(draggedItem)
+          const targetIndex = allItems.indexOf(item)
+
+          let movingItems = []
+
+          /* determine what moves */
+
+          if (selectedImages.has(parseInt(draggedItem.dataset.index))) {
+
+            movingItems = allItems.filter(i =>
+              selectedImages.has(parseInt(i.dataset.index))
+            )
+
+          } else {
+
+            movingItems = [draggedItem]
+
+          }
+
+          /* remove moving items from DOM first */
+
+          movingItems.forEach(i => i.remove())
+
+          const updatedItems = [...editor.children]
+
+          let insertIndex = updatedItems.indexOf(item)
+
+          if (draggedIndex < targetIndex)
+            insertIndex++
+
+          /* insert block */
+
+          const referenceNode = editor.children[insertIndex]
+
+          movingItems.forEach(node => {
+            editor.insertBefore(node, referenceNode)
+          })
+
+        })
+
+      })
+
+    }
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+
+      const items = [...editor.children]
+
+      const updatedData = items.map(item => {
+
+        const index = item.dataset.index
+        const img = currentGalleryData[index]
+
+        return {
+          ...img,
+          tags: img.tags ? [...img.tags] : []
+        }
+
+      })
+
+      try {
+
+        const response = await fetch("http://localhost:8765/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            path: relativePath,
+            data: updatedData
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error(await response.text())
+        }
+
+        console.log("Saved successfully")
+
+      } catch (err) {
+
+        console.error("Save failed", err)
+        alert("Save failed. Check server console.")
+
+      }
+
+    })
+
+  </script>
+
+</body>
+
+</html>
