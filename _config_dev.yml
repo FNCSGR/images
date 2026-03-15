@@ -1,1 +1,4 @@
 baseurl: "/Gallery/dev"
+
+include:
+  - Organiser.html

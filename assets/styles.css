@@ -198,6 +198,42 @@ header {
   padding: 0 1rem;
 }
 
+#mode-switch {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 0.3rem 0 0.0rem 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  background: #1e1e1e;
+  padding: 10px;
+  border-radius: 25px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#mode-switch button {
+  background: #2a2a2a;
+  color: #eee;
+  border: 1px solid #3a3a3a;
+  padding: 0.45rem 1.1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+#mode-switch button:hover {
+  background: #3a3a3a;
+}
+
+#mode-switch button:disabled {
+  background: #6200ee;
+  border-color: #6200ee;
+  color: white;
+  cursor: default;
+}
+
 #slideshow {
   position: fixed;
   inset: 0;
